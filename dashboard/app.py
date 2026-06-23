@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 from pathlib import Path
 from typing import Iterable
 
@@ -11,6 +12,7 @@ import streamlit as st
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 TRATADOS_DIR = PROJECT_ROOT / "dados" / "02_tratados"
 MODELADOS_DIR = PROJECT_ROOT / "dados" / "03_modelados"
+ICONS_DIR = PROJECT_ROOT / "dashboard" / "assets" / "icons"
 
 OCORRENCIAS_PATH = TRATADOS_DIR / "ocorrencias_tratadas.csv"
 PESSOAS_PATH = TRATADOS_DIR / "pessoas_tratadas.csv"
@@ -250,15 +252,24 @@ def aplicar_estilo_global() -> None:
         }}
 
         .metric-icon {{
-            color: var(--accent-blue);
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-width: 1.35rem;
-            height: 1.35rem;
-            font-size: 1rem;
-            font-weight: 900;
-            line-height: 1;
+            width: 2rem;
+            height: 2rem;
+            padding: .28rem;
+            border-radius: 10px;
+            background: rgba(15, 23, 42, .58);
+            border: 1px solid rgba(148, 163, 184, .18);
+            flex: 0 0 auto;
+        }}
+
+        .metric-icon img {{
+            width: 26px;
+            height: 26px;
+            object-fit: contain;
+            opacity: .92;
+            filter: drop-shadow(0 3px 8px rgba(0, 0, 0, .30));
         }}
 
         .metric-value {{
@@ -274,9 +285,9 @@ def aplicar_estilo_global() -> None:
             line-height: 1.30;
         }}
 
-        .metric-card.red .metric-icon {{ color: var(--accent-red); }}
-        .metric-card.yellow .metric-icon {{ color: var(--accent-yellow); }}
-        .metric-card.green .metric-icon {{ color: var(--accent-green); }}
+        .metric-card.red .metric-icon {{ border-color: rgba(239, 68, 68, .28); }}
+        .metric-card.yellow .metric-icon {{ border-color: rgba(250, 204, 21, .30); }}
+        .metric-card.green .metric-icon {{ border-color: rgba(34, 197, 94, .28); }}
 
         .section-head {{
             margin: .55rem 0 1rem;
@@ -539,25 +550,46 @@ def formatar_numero(valor: float | int) -> str:
     return f"{int(valor):,}".replace(",", ".")
 
 
+@st.cache_data(show_spinner=False)
+def carregar_icone_base64(caminho_icone: str) -> str:
+    """Carrega um ícone local e devolve um data URI para uso nos cards."""
+    caminho = ICONS_DIR / caminho_icone
+    if not caminho.exists():
+        return ""
+
+    mime_por_extensao = {
+        ".png": "image/png",
+        ".svg": "image/svg+xml",
+        ".webp": "image/webp",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+    }
+    mime = mime_por_extensao.get(caminho.suffix.lower(), "image/png")
+    encoded = base64.b64encode(caminho.read_bytes()).decode("ascii")
+    return f"data:{mime};base64,{encoded}"
+
+
 def render_metric_card(label: str, value: str, description: str) -> None:
     """Renderiza um card individual como HTML seguro no Streamlit."""
     estilos_por_card = {
-        "total de acidentes": ("", "•"),
-        "mortos": ("red", "☠"),
-        "feridos graves": ("red", "✚"),
-        "feridos leves": ("yellow", "⊕"),
-        "vítimas": ("green", "+"),
-        "vitimas": ("green", "+"),
-        "acidentes graves": ("red", "⚠"),
-        "percentual de graves": ("yellow", "%"),
+        "total de acidentes": ("", "colisao-de-carro.png"),
+        "mortos": ("red", "cranio.png"),
+        "feridos graves": ("red", "paciente.png"),
+        "feridos leves": ("yellow", "placa-de-hospital.png"),
+        "vítimas": ("green", "vitima.png"),
+        "vitimas": ("green", "vitima.png"),
+        "acidentes graves": ("red", "carros batento.png"),
+        "percentual de graves": ("yellow", "percentagem.png"),
     }
-    accent_class, icon = estilos_por_card.get(label.lower(), ("", "•"))
+    accent_class, icon_file = estilos_por_card.get(label.lower(), ("", "colisao-de-carro.png"))
+    icon_src = carregar_icone_base64(icon_file)
+    icon_html = f'<img src="{icon_src}" alt="" aria-hidden="true">' if icon_src else ""
 
     html = f"""
     <div class="metric-card {accent_class}">
         <div class="metric-top">
             <span>{label}</span>
-            <span class="metric-icon">{icon}</span>
+            <span class="metric-icon">{icon_html}</span>
         </div>
         <div class="metric-value">{value}</div>
         <div class="metric-description">{description}</div>

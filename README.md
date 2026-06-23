@@ -66,6 +66,8 @@ streamlit run dashboard/app.py
 
 No Windows, também é possível abrir o dashboard dando dois cliques no arquivo `ABRIR_DASHBOARD.bat` na raiz do projeto.
 
+Os ícones dos cards do dashboard ficam armazenados localmente em `dashboard/assets/icons/`.
+
 Se os dados tratados/modelados ainda não existirem, rode antes:
 
 ```powershell
