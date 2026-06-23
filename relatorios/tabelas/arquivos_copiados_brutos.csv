@@ -1,0 +1,9 @@
+origem,destino,observacao
+"datatran2024.csv","dados/01_brutos/ocorrencia/acidentes_2024_ocorrencia.csv","Copia preservada; fonte principal em dados/01_brutos"
+"datatran2025.csv","dados/01_brutos/ocorrencia/acidentes_2025_ocorrencia.csv","Copia preservada; fonte principal em dados/01_brutos"
+"datatran2026/datatran2026.csv","dados/01_brutos/ocorrencia/acidentes_2026_ocorrencia.csv","Copia preservada; fonte principal em dados/01_brutos"
+"acidentes2024.csv","dados/01_brutos/pessoa/acidentes_2024_pessoa.csv","Copia preservada; fonte principal em dados/01_brutos"
+"acidentes2025.csv","dados/01_brutos/pessoa/acidentes_2025_pessoa.csv","Copia preservada; fonte principal em dados/01_brutos"
+"acidentes2026/acidentes2026.csv","dados/01_brutos/pessoa/acidentes_2026_pessoa.csv","Copia preservada; fonte principal em dados/01_brutos"
+"datatran2022.csv","dados/01_brutos/ocorrencia/acidentes_2022_ocorrencia.csv","Copia preservada; fonte principal em dados/01_brutos"
+"datatran2023.csv","dados/01_brutos/ocorrencia/acidentes_2023_ocorrencia.csv","Copia preservada; fonte principal em dados/01_brutos"

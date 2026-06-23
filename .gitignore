@@ -1,0 +1,35 @@
+# Ambientes e caches
+.venv/
+venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Arquivos locais/sensíveis
+.env
+*.env
+*.log
+secrets.*
+token*
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Dados grandes do projeto
+dados/**/*.csv
+/acidentes*.csv
+/datatran*.csv
+/acidentes2026/
+/datatran2026/
+
+# Bancos locais
+*.db
+*.sqlite
+*.sqlite3
+
+# Manter estrutura útil
+!dados/**/.gitkeep
+!dashboard/imagens/.gitkeep

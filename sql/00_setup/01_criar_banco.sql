@@ -1,0 +1,1 @@
+CREATE DATABASE observatorio_acidentes_transito;
