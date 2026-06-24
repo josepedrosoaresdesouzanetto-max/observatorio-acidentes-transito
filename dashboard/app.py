@@ -578,7 +578,7 @@ def render_metric_card(label: str, value: str, description: str) -> None:
         "feridos leves": ("yellow", "placa-de-hospital.png"),
         "vítimas": ("green", "vitima.png"),
         "vitimas": ("green", "vitima.png"),
-        "acidentes graves": ("red", "carros batento.png"),
+        "acidentes graves": ("red", "carros-batendo.png"),
         "percentual de graves": ("yellow", "percentagem.png"),
     }
     accent_class, icon_file = estilos_por_card.get(label.lower(), ("", "colisao-de-carro.png"))
