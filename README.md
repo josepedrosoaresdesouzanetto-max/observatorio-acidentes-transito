@@ -1,23 +1,92 @@
 # Observatório de Acidentes de Trânsito no Brasil
 
-Projeto de análise de dados sobre acidentes em rodovias federais brasileiras, usando dados públicos da Polícia Rodoviária Federal (PRF).
+Análise de dados públicos da PRF sobre acidentes em rodovias federais brasileiras, com pipeline em Python, consultas SQL, relatório técnico e dashboard interativo em Streamlit.
 
-## Objetivo
+![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat&logo=python&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-dashboard-FF4B4B?style=flat&logo=streamlit&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green?style=flat)
+![Status](https://img.shields.io/badge/status-projeto%20acad%C3%AAmico-blue?style=flat)
 
-Organizar, tratar, modelar e analisar dados de acidentes para identificar padrões por ano, UF, município, rodovia, causa, horário, clima, tipo de pista e gravidade.
+## Sobre o projeto
+
+Este projeto organiza, trata e analisa dados públicos da **Polícia Rodoviária Federal (PRF)** para observar padrões de acidentes em rodovias federais brasileiras.
+
+A proposta é transformar bases grandes em uma análise reproduzível, com foco em perguntas como:
+
+- quais UFs concentram mais acidentes;
+- quais causas aparecem com mais frequência;
+- quais BRs se destacam nos rankings;
+- em quais períodos os acidentes ocorrem mais;
+- onde há maior combinação entre volume e gravidade.
+
+O projeto foi desenvolvido como entrega acadêmica e também como material de portfólio júnior em análise de dados.
+
+## Tecnologias usadas
+
+- **Python** para tratamento, modelagem e geração de artefatos.
+- **Pandas** para leitura, limpeza e agregações.
+- **Matplotlib** para gráficos estáticos do relatório.
+- **Streamlit** para o dashboard interativo.
+- **Plotly** para gráficos interativos no dashboard.
+- **SQL** para consultas, modelagem e testes de qualidade.
+- **Pytest** para testes básicos do pipeline.
+- **Jupyter Notebook** para roteiros de exploração e documentação analítica.
+
+## O que este projeto entrega
+
+- Limpeza e padronização dos dados da PRF.
+- Separação dos dados em camadas bruta, tratada e modelada.
+- Criação de colunas derivadas para análise temporal, geográfica e de gravidade.
+- Modelagem analítica com dimensões, fatos e índices de risco.
+- Consultas SQL organizadas por carga, tratamento, modelagem, views e testes.
+- Dashboard interativo com filtros, cards, rankings e gráficos.
+- Relatório final em Markdown com gráficos e tabelas.
+- Testes básicos com `pytest`.
+- Documentação técnica sobre fonte, metodologia, LGPD e limitações.
+
+## Demonstração do dashboard
+
+O dashboard fica em `dashboard/app.py` e foi construído com Streamlit e Plotly.
+
+As imagens abaixo estão reservadas para prints do dashboard. Elas ainda não foram adicionadas ao repositório para evitar referências quebradas no README.
+
+<!--
+Adicionar prints futuramente:
+
+![Dashboard - visão geral](docs/imagens/dashboard_home.png)
+![Ranking de UFs](docs/imagens/ranking_ufs.png)
+![Índice de risco](docs/imagens/indice_risco.png)
+-->
+
+Para abrir o dashboard:
+
+```powershell
+pip install -r requirements.txt
+streamlit run dashboard/app.py
+```
+
+No Windows, também é possível abrir o dashboard com dois cliques no arquivo:
+
+```text
+ABRIR_DASHBOARD.bat
+```
+
+## Principais insights
+
+Sem tratar o volume e a gravidade em conjunto, a análise pode ficar incompleta. Uma UF ou rodovia pode ter muitos acidentes, enquanto outra pode se destacar por mortes ou feridos graves.
+
+Por isso, o projeto inclui um **índice de risco educacional**, criado para combinar frequência e severidade. Ele não é uma previsão oficial nem um indicador validado por órgão público, mas ajuda a comparar grupos de forma transparente.
+
+Outro ponto importante é que **2026 é um ano parcial**. Os resultados desse ano devem ser interpretados com cuidado e não comparados diretamente com anos fechados.
 
 ## Fonte dos dados
 
-Os dados vêm de arquivos públicos da PRF. O projeto usa dois tipos de base:
+Os dados vêm de arquivos públicos da PRF. O projeto usa dois tipos principais de base:
 
 - **Ocorrências:** arquivos `datatran`, com uma linha por acidente.
 - **Pessoas/envolvidos:** arquivos `acidentes`, com registros dos envolvidos nas ocorrências.
 
-## Anos analisados
-
-A análise principal usa os anos: **2024, 2025, 2026**.
-
-O ano de **2026 é parcial**, pois ainda está em andamento. Por isso, comparações entre 2026 e anos fechados devem ser feitas com cuidado.
+A análise principal usa os anos **2024, 2025 e 2026**. Os arquivos de 2022 e 2023 foram preservados como histórico bruto, mas não são o foco principal do relatório.
 
 ## Estrutura do projeto
 
@@ -30,6 +99,7 @@ sql/                  scripts SQL para PostgreSQL
 notebooks/            roteiros de análise em Jupyter
 relatorios/           relatório, gráficos e tabelas
 docs/                 documentação técnica
+docs/imagens/         espaço reservado para prints do dashboard
 dashboard/            dashboard interativo em Streamlit
 apresentacao/         roteiro para sala de aula
 testes/               testes com pytest
@@ -43,7 +113,9 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-## Como executar
+## Como executar o pipeline
+
+Execute os comandos abaixo na raiz do projeto:
 
 ```powershell
 python -m src.limpar_dados
@@ -53,22 +125,7 @@ python -m src.gerar_graficos
 python -m src.gerar_relatorio
 ```
 
-## Dashboard interativo
-
-O projeto inclui um dashboard executável em Streamlit, com visual corporativo, filtros laterais, cards executivos, gráficos interativos, tratamento visual de categorias e rankings de risco.
-
-Para abrir o dashboard, rode na raiz do projeto:
-
-```powershell
-pip install -r requirements.txt
-streamlit run dashboard/app.py
-```
-
-No Windows, também é possível abrir o dashboard dando dois cliques no arquivo `ABRIR_DASHBOARD.bat` na raiz do projeto.
-
-Os ícones dos cards do dashboard ficam armazenados localmente em `dashboard/assets/icons/`.
-
-Se os dados tratados/modelados ainda não existirem, rode antes:
+Se os arquivos tratados e modelados ainda não existirem, rode primeiro:
 
 ```powershell
 python -m src.limpar_dados
@@ -76,29 +133,11 @@ python -m src.modelar_dados
 python -m src.calcular_indice_risco
 ```
 
-No dashboard, todos os filtros começam vazios. Filtro vazio significa todos os valores. A categoria `Ignorado` é exibida como `Não informado` apenas na camada visual; categorias raras como `Neve` e `Granizo` são preservadas.
-
-## Como rodar testes
+## Como rodar os testes
 
 ```powershell
 python -m pytest
 ```
-
-## Dados
-
-A fonte principal dos scripts é `dados/01_brutos/`. CSVs antigos encontrados na raiz foram preservados em `dados/00_arquivos_originais_encontrados/`, sem apagar os originais.
-
-Arquivos grandes de dados não devem ser enviados ao GitHub sem necessidade. Para reproduzir o projeto, coloque os CSVs da PRF nas pastas indicadas em `dados/01_brutos/`.
-
-## Principais perguntas respondidas
-
-- Quantos acidentes ocorreram por ano?
-- Quais UFs concentram mais acidentes?
-- Quais causas aparecem com mais frequência?
-- Quais BRs aparecem no ranking de acidentes?
-- Onde há mais mortes e feridos graves?
-- Como interpretar 2026 como recorte parcial?
-- Quais grupos aparecem com maior índice de risco?
 
 ## Índice de risco
 
@@ -112,11 +151,21 @@ Ele é calculado por UF, BR, município, causa e faixa de horário. A classifica
 
 ## Resultados gerados
 
-Os gráficos ficam em `relatorios/graficos/` e o relatório consolidado em `relatorios/relatorio_final.md`.
+- Gráficos: `relatorios/graficos/`
+- Tabelas: `relatorios/tabelas/`
+- Relatório final: `relatorios/relatorio_final.md`
+- Dashboard: `dashboard/app.py`
+- Roteiro de apresentação: `apresentacao/roteiro_apresentacao.md`
+
+## Dados e GitHub
+
+Os CSVs grandes de dados brutos, tratados e modelados não são enviados ao GitHub. Eles ficam ignorados pelo `.gitignore`.
+
+Para reproduzir o projeto, coloque os CSVs públicos da PRF nas pastas indicadas em `dados/01_brutos/` e execute o pipeline.
 
 ## Proteção de dados e LGPD
 
-Este projeto utiliza dados públicos disponibilizados para fins de análise educacional. Nenhum dado pessoal, sensível ou identificável foi incluído no repositório. A análise foi organizada respeitando boas práticas de privacidade, minimização de dados e uso responsável das informações.
+Este projeto utiliza dados públicos disponibilizados para fins de análise educacional. Nenhum dado pessoal sensível ou identificável foi incluído no repositório.
 
 ## Limitações
 
@@ -124,11 +173,14 @@ Este projeto utiliza dados públicos disponibilizados para fins de análise educ
 - Os resultados dependem da qualidade dos registros da fonte.
 - A análise cobre o escopo de rodovias federais registrado pela PRF.
 - Padrões encontrados não provam causalidade absoluta.
+- O índice de risco é uma métrica educacional, não uma previsão oficial.
 
 ## Próximos passos
 
+- Adicionar prints reais do dashboard em `docs/imagens/`.
 - Atualizar 2026 quando o ano fechar.
-- Cruzar com frota, população ou fluxo de veículos.
+- Cruzar os resultados com frota, população ou fluxo de veículos.
+- Evoluir o dashboard com novos comparativos.
 - Refinar o índice de risco.
 
 ## Autor
