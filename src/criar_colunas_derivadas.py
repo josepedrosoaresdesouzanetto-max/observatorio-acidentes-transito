@@ -50,7 +50,8 @@ def criar_derivadas(df: pd.DataFrame) -> pd.DataFrame:
 
     df["total_feridos"] = df["feridos_leves"] + df["feridos_graves"]
     df["total_vitimas"] = df["mortos"] + df["feridos_leves"] + df["feridos_graves"]
-    df["teve_morte"] = (df["mortos"] > 0).map({True: "Sim", False: "Nao"})
+    df["acidente_fatal"] = (df["mortos"] >= 1).astype(int)
+    df["teve_morte"] = df["acidente_fatal"].map({1: "Sim", 0: "Nao"})
     df["acidente_grave"] = ((df["mortos"] > 0) | (df["feridos_graves"] > 0)).map({True: "Sim", False: "Nao"})
     df["nivel_gravidade"] = df.apply(classificar_gravidade, axis=1)
     return df

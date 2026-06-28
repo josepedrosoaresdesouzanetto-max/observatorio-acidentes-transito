@@ -43,7 +43,9 @@ Os filtros começam vazios e, nesse estado, mostram todos os registros.
 ## Indicadores
 
 - Total de acidentes
+- Acidentes fatais
 - Mortos
+- Percentual de fatalidade
 - Feridos graves
 - Feridos leves
 - Vítimas
@@ -54,7 +56,7 @@ Os filtros começam vazios e, nesse estado, mostram todos os registros.
 
 1. **Visão Geral:** cards, acidentes por ano, UF, mês, dia da semana e tabela resumo por ano.
 2. **Perfil dos Acidentes:** principais causas, tipos, fase do dia e clima.
-3. **Gravidade:** mortos por UF, feridos graves por UF, acidentes graves por causa e comparação entre volume e gravidade.
+3. **Gravidade:** percentual de acidentes fatais por UF, mortos por UF, acidentes graves por causa e comparação entre volume e gravidade.
 4. **Rodovias e Locais Críticos:** ranking de BRs, municípios e risco por BR/UF/município.
 5. **Índice de Risco:** fórmula, rankings por UF, BR e causa, e classificação por risco.
 

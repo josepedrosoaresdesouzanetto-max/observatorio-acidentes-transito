@@ -4,7 +4,7 @@ Este dashboard foi criado em Streamlit para explorar os dados tratados e modelad
 
 ## Objetivo
 
-Permitir uma análise interativa dos acidentes em rodovias federais brasileiras, com filtros, cards executivos, gráficos profissionais e rankings de risco.
+Permitir uma análise interativa dos acidentes em rodovias federais brasileiras, com filtros, cards executivos, gráficos profissionais, rankings de risco e leitura da variável-alvo `acidente_fatal`.
 
 ## Fontes de dados usadas
 
@@ -59,7 +59,7 @@ Todos os filtros começam vazios. Filtro vazio significa que todos os valores s�
 
 1. **Visão Geral:** cards executivos, acidentes por ano, UF, mês, dia da semana e resumo anual.
 2. **Perfil dos Acidentes:** causas, tipos de acidente, fase do dia e condição meteorológica.
-3. **Gravidade:** mortos por UF, feridos graves por UF, acidentes graves por causa e comparação entre volume e gravidade.
+3. **Gravidade:** percentual de acidentes fatais por UF, mortos por UF, acidentes graves por causa e comparação entre volume e gravidade.
 4. **Rodovias e Locais Críticos:** rankings de BRs, municípios, BRs por índice de risco, UFs por índice de risco e municípios críticos.
 5. **Índice de Risco:** fórmula, rankings por UF, BR e causa, e classificação em baixo, médio, alto e crítico.
 

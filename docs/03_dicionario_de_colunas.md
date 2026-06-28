@@ -44,6 +44,7 @@
 - `veiculos`: total de veículos envolvidos.
 - `total_feridos`: soma de feridos leves e graves.
 - `total_vitimas`: soma de mortos, feridos leves e feridos graves.
+- `acidente_fatal`: variável-alvo binária criada a partir de `mortos`. Recebe `1` quando `mortos >= 1` e `0` quando `mortos = 0`.
 - `teve_morte`: indica se houve pelo menos uma morte.
 - `acidente_grave`: indica se houve morte ou ferido grave.
 - `nivel_gravidade`: classifica a ocorrência como sem vítimas, leve, grave ou fatal.

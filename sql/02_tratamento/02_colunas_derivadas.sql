@@ -14,5 +14,6 @@ SELECT
     END AS faixa_horario_calc,
     feridos_leves + feridos_graves AS total_feridos_calc,
     mortos + feridos_leves + feridos_graves AS total_vitimas_calc,
+    CASE WHEN mortos >= 1 THEN 1 ELSE 0 END AS acidente_fatal_calc,
     CASE WHEN mortos > 0 OR feridos_graves > 0 THEN 'Sim' ELSE 'Não' END AS acidente_grave_calc
 FROM tratado.ocorrencias;

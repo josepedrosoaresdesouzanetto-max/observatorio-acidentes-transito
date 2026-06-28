@@ -21,7 +21,9 @@ def carregar_ocorrencias_tratadas() -> pd.DataFrame:
     if not path.exists():
         raise FileNotFoundError("Arquivo ocorrencias_tratadas.csv não encontrado. Rode: python -m src.limpar_dados")
     df = ler_csv_prf(path)
-    for coluna in ["ano", "mortos", "feridos_graves", "feridos_leves", "total_vitimas"]:
+    if "acidente_fatal" not in df.columns and "mortos" in df.columns:
+        df["acidente_fatal"] = (pd.to_numeric(df["mortos"], errors="coerce").fillna(0) >= 1).astype(int)
+    for coluna in ["ano", "mortos", "acidente_fatal", "feridos_graves", "feridos_leves", "total_vitimas"]:
         df[coluna] = pd.to_numeric(df[coluna], errors="coerce").fillna(0)
     return df
 
@@ -38,6 +40,15 @@ def gerar_relatorio() -> str:
     top_causas = df["causa_acidente"].value_counts().head(10).reset_index()
     top_causas.columns = ["causa", "acidentes"]
     mortos_uf = df.groupby("uf")["mortos"].sum().sort_values(ascending=False).head(10).reset_index()
+    fatalidade_uf = (
+        df.groupby("uf")
+        .agg(total_acidentes=("id", "count"), acidentes_fatais=("acidente_fatal", "sum"))
+        .reset_index()
+    )
+    fatalidade_uf["percentual_fatalidade"] = (
+        fatalidade_uf["acidentes_fatais"] / fatalidade_uf["total_acidentes"] * 100
+    ).round(2)
+    fatalidade_uf = fatalidade_uf.sort_values("percentual_fatalidade", ascending=False).head(10)
     graves_uf = df[df["acidente_grave"] == "Sim"].groupby("uf").size().sort_values(ascending=False).head(10).reset_index(name="acidentes_graves")
     risco_uf = ler_csv_prf(risco_path).head(10)
     risco_uf.to_csv(TABELAS_DIR / "ranking_indice_risco_uf.csv", index=False, encoding="utf-8-sig")
@@ -56,7 +67,9 @@ Foram processadas **{total:,} ocorrências** na base tratada principal.
 
 ## 2. Objetivo
 
-Identificar padrões de acidentes por tempo, local, rodovia, causa, tipo de acidente, clima, condições da via e gravidade, usando um fluxo reproduzível com Python, SQL, documentação e gráficos.
+Identificar padrões associados a acidentes fatais por tempo, local, rodovia, causa, tipo de acidente, clima, condições da via e gravidade, usando um fluxo reproduzível com Python, SQL, documentação e gráficos.
+
+A variável-alvo do projeto é `acidente_fatal`, criada a partir do campo original `mortos`: quando `mortos >= 1`, `acidente_fatal = 1`; quando `mortos = 0`, `acidente_fatal = 0`.
 
 ## 3. Fonte dos dados
 
@@ -89,6 +102,10 @@ Foram aplicadas etapas de leitura com separador `;`, tratamento de encoding, pad
 ### UFs com mais mortos
 
 {dataframe_markdown(mortos_uf)}
+
+### UFs com maior percentual de acidentes fatais
+
+{dataframe_markdown(fatalidade_uf)}
 
 ### UFs com mais acidentes graves
 
@@ -126,6 +143,7 @@ O índice é educacional, simples e transparente. Ele não representa previsão 
 - A análise mostra que volume de acidentes e gravidade precisam ser observados juntos.
 - Rankings por UF, BR e causa ajudam a localizar concentrações de ocorrências.
 - O índice de risco facilita a leitura combinada entre frequência e severidade.
+- A variável `acidente_fatal` permite comparar ocorrências fatais e não fatais sem confundir o campo original `mortos` com a regra de transformação.
 - 2026 já possui registros úteis, mas ainda não pode ser comparado como ano fechado.
 
 ## 11. Limitações

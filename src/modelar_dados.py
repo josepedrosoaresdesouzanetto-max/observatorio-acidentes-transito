@@ -16,6 +16,8 @@ def chave_dim(df: pd.DataFrame, colunas: list[str], nome: str) -> pd.DataFrame:
 def gerar_modelados() -> dict[str, pd.DataFrame]:
     ocorrencias = ler_csv_prf(TRATADOS_DIR / "ocorrencias_tratadas.csv")
     ocorrencias["data_inversa"] = pd.to_datetime(ocorrencias["data_inversa"], errors="coerce")
+    if "acidente_fatal" not in ocorrencias.columns and "mortos" in ocorrencias.columns:
+        ocorrencias["acidente_fatal"] = (pd.to_numeric(ocorrencias["mortos"], errors="coerce").fillna(0) >= 1).astype(int)
 
     dim_tempo = ocorrencias[["data_inversa", "ano", "mes", "dia_semana", "hora", "faixa_horario", "final_de_semana"]].drop_duplicates()
     dim_local = chave_dim(ocorrencias, ["uf", "municipio"], "id_local")
@@ -28,7 +30,7 @@ def gerar_modelados() -> dict[str, pd.DataFrame]:
             "id", "data_inversa", "ano", "uf", "municipio", "br", "km", "causa_acidente",
             "tipo_acidente", "classificacao_acidente", "fase_dia", "condicao_metereologica",
             "mortos", "feridos_leves", "feridos_graves", "ilesos", "veiculos", "total_feridos",
-            "total_vitimas", "teve_morte", "acidente_grave", "nivel_gravidade", "faixa_horario",
+            "total_vitimas", "acidente_fatal", "teve_morte", "acidente_grave", "nivel_gravidade", "faixa_horario",
         ]
     ].copy()
 

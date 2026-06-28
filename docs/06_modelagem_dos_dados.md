@@ -24,7 +24,7 @@ Agrupa condição meteorológica e fase do dia.
 
 ## fato_acidentes
 
-Tabela principal da análise de ocorrências. Contém medidas como mortos, feridos leves, feridos graves, ilesos, veículos, total de feridos, total de vítimas e classificação de gravidade.
+Tabela principal da análise de ocorrências. Contém medidas como mortos, feridos leves, feridos graves, ilesos, veículos, total de feridos, total de vítimas, a variável-alvo `acidente_fatal` e classificação de gravidade.
 
 ## fato_vitimas
 

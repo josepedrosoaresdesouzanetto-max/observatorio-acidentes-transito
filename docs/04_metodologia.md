@@ -20,7 +20,9 @@ Os nomes das colunas são convertidos para um formato mais estável, em letras m
 
 ## 5. Criação de colunas derivadas
 
-Foram criadas colunas como `ano`, `mes`, `hora`, `faixa_horario`, `final_de_semana`, `total_feridos`, `total_vitimas`, `teve_morte`, `acidente_grave` e `nivel_gravidade`.
+Foram criadas colunas como `ano`, `mes`, `hora`, `faixa_horario`, `final_de_semana`, `total_feridos`, `total_vitimas`, `acidente_fatal`, `teve_morte`, `acidente_grave` e `nivel_gravidade`.
+
+A variável-alvo do projeto é `acidente_fatal`. Ela é derivada do campo original `mortos`: se `mortos >= 1`, então `acidente_fatal = 1`; se `mortos = 0`, então `acidente_fatal = 0`. Essa separação evita confundir campo original, regra de transformação e variável analítica.
 
 ## 6. Modelagem
 
@@ -28,7 +30,7 @@ A camada modelada separa dimensões e fatos para facilitar consultas e análises
 
 ## 7. Análise exploratória
 
-A análise considera volume de acidentes, localidade, rodovia, período, causa, tipo de acidente, clima, fase do dia e gravidade.
+A análise considera volume de acidentes, localidade, rodovia, período, causa, tipo de acidente, clima, fase do dia, gravidade e proporção de acidentes fatais.
 
 ## 8. Geração de gráficos
 

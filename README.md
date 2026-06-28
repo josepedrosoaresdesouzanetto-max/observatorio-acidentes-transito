@@ -13,11 +13,14 @@ Este projeto organiza, trata e analisa dados públicos da **Polícia Rodoviária
 
 A proposta é transformar bases grandes em uma análise reproduzível, com foco em perguntas como:
 
+- quais fatores estão associados a acidentes fatais;
 - quais UFs concentram mais acidentes;
 - quais causas aparecem com mais frequência;
 - quais BRs se destacam nos rankings;
 - em quais períodos os acidentes ocorrem mais;
 - onde há maior combinação entre volume e gravidade.
+
+O eixo analítico central do projeto é a variável-alvo `acidente_fatal`. Ela é criada a partir do campo original `mortos`: `acidente_fatal = 1` quando `mortos >= 1` e `acidente_fatal = 0` quando `mortos = 0`. Assim, o projeto diferencia o campo original, a regra de transformação e a variável usada para comparar acidentes fatais e não fatais.
 
 O projeto foi desenvolvido como entrega acadêmica e também como material de portfólio júnior em análise de dados.
 
@@ -37,6 +40,7 @@ O projeto foi desenvolvido como entrega acadêmica e também como material de po
 - Limpeza e padronização dos dados da PRF.
 - Separação dos dados em camadas bruta, tratada e modelada.
 - Criação de colunas derivadas para análise temporal, geográfica e de gravidade.
+- Criação da variável-alvo `acidente_fatal` a partir de `mortos`.
 - Modelagem analítica com dimensões, fatos e índices de risco.
 - Consultas SQL organizadas por carga, tratamento, modelagem, views e testes.
 - Dashboard interativo com filtros, cards, rankings e gráficos.
@@ -76,6 +80,8 @@ ABRIR_DASHBOARD.bat
 Sem tratar o volume e a gravidade em conjunto, a análise pode ficar incompleta. Uma UF ou rodovia pode ter muitos acidentes, enquanto outra pode se destacar por mortes ou feridos graves.
 
 Por isso, o projeto inclui um **índice de risco educacional**, criado para combinar frequência e severidade. Ele não é uma previsão oficial nem um indicador validado por órgão público, mas ajuda a comparar grupos de forma transparente.
+
+Além do índice, o projeto analisa a **proporção de acidentes fatais**. Essa leitura é importante porque volume absoluto e fatalidade relativa podem apontar prioridades diferentes.
 
 Outro ponto importante é que **2026 é um ano parcial**. Os resultados desse ano devem ser interpretados com cuidado e não comparados diretamente com anos fechados.
 

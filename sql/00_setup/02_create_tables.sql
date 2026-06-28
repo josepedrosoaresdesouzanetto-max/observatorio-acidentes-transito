@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS tratado.ocorrencias (
     final_de_semana TEXT,
     total_feridos INTEGER,
     total_vitimas INTEGER,
+    acidente_fatal INTEGER,
     teve_morte TEXT,
     acidente_grave TEXT,
     nivel_gravidade TEXT

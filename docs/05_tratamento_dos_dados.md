@@ -20,6 +20,15 @@ A coluna `horario` é usada para extrair `hora`. Depois, a hora é classificada 
 
 Colunas como `mortos`, `feridos_leves`, `feridos_graves`, `ilesos`, `veiculos` e `pessoas` são convertidas para números. Valores inválidos são tratados com cautela e substituídos por zero apenas nas métricas em que isso é necessário para cálculo.
 
+## Variável-alvo
+
+A coluna `acidente_fatal` é criada a partir do campo `mortos`.
+
+- `acidente_fatal = 1` quando `mortos >= 1`
+- `acidente_fatal = 0` quando `mortos = 0`
+
+Essa coluna é a variável-alvo do projeto. Ela permite comparar ocorrências fatais e não fatais por UF, BR, horário, causa, tipo de acidente, clima, pista e outras dimensões.
+
 ## Nomes de colunas
 
 Os nomes são normalizados para evitar diferenças entre arquivos e anos. A normalização reduz acentos, espaços e variações de escrita.

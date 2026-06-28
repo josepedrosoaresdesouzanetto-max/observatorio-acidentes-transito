@@ -8,7 +8,9 @@ Foram processadas **175,459 ocorrências** na base tratada principal.
 
 ## 2. Objetivo
 
-Identificar padrões de acidentes por tempo, local, rodovia, causa, tipo de acidente, clima, condições da via e gravidade, usando um fluxo reproduzível com Python, SQL, documentação e gráficos.
+Identificar padrões associados a acidentes fatais por tempo, local, rodovia, causa, tipo de acidente, clima, condições da via e gravidade, usando um fluxo reproduzível com Python, SQL, documentação e gráficos.
+
+A variável-alvo do projeto é `acidente_fatal`, criada a partir do campo original `mortos`: quando `mortos >= 1`, `acidente_fatal = 1`; quando `mortos = 0`, `acidente_fatal = 0`.
 
 ## 3. Fonte dos dados
 
@@ -79,6 +81,21 @@ Foram aplicadas etapas de leitura com separador `;`, tratamento de encoding, pad
 | MA | 651 |
 | MT | 575 |
 
+### UFs com maior percentual de acidentes fatais
+
+| uf | total_acidentes | acidentes_fatais | percentual_fatalidade |
+| --- | --- | --- | --- |
+| MA | 2937 | 562 | 19.14 |
+| PA | 2540 | 441 | 17.36 |
+| RR | 323 | 56 | 17.34 |
+| AM | 369 | 55 | 14.91 |
+| AL | 1599 | 209 | 13.07 |
+| TO | 1737 | 219 | 12.61 |
+| CE | 3258 | 376 | 11.54 |
+| BA | 9971 | 1138 | 11.41 |
+| PI | 3583 | 360 | 10.05 |
+| PE | 7604 | 721 | 9.48 |
+
 ### UFs com mais acidentes graves
 
 | uf | acidentes_graves |
@@ -137,6 +154,7 @@ O índice é educacional, simples e transparente. Ele não representa previsão 
 - A análise mostra que volume de acidentes e gravidade precisam ser observados juntos.
 - Rankings por UF, BR e causa ajudam a localizar concentrações de ocorrências.
 - O índice de risco facilita a leitura combinada entre frequência e severidade.
+- A variável `acidente_fatal` permite comparar ocorrências fatais e não fatais sem confundir o campo original `mortos` com a regra de transformação.
 - 2026 já possui registros úteis, mas ainda não pode ser comparado como ano fechado.
 
 ## 11. Limitações

@@ -34,3 +34,8 @@ WHERE total_feridos <> feridos_leves + feridos_graves;
 SELECT COUNT(*) AS total_vitimas_inconsistente
 FROM tratado.ocorrencias
 WHERE total_vitimas <> mortos + feridos_leves + feridos_graves;
+
+-- Variável-alvo de fatalidade inconsistente
+SELECT COUNT(*) AS acidente_fatal_inconsistente
+FROM tratado.ocorrencias
+WHERE acidente_fatal <> CASE WHEN mortos >= 1 THEN 1 ELSE 0 END;

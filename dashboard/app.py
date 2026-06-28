@@ -41,6 +41,7 @@ OCORRENCIAS_COLUNAS = [
     "mes",
     "faixa_horario",
     "mortos",
+    "acidente_fatal",
     "feridos_graves",
     "feridos_leves",
     "total_vitimas",
@@ -74,6 +75,9 @@ ROTULOS = {
     "total_acidentes": "Total de acidentes",
     "acidentes": "Acidentes",
     "mortos": "Mortos",
+    "acidente_fatal": "Acidente fatal",
+    "acidentes_fatais": "Acidentes fatais",
+    "percentual_fatalidade": "% fatalidade",
     "feridos_graves": "Feridos graves",
     "feridos_leves": "Feridos leves",
     "total_vitimas": "Total de vítimas",
@@ -435,10 +439,14 @@ def carregar_dados() -> dict[str, pd.DataFrame]:
     if not OCORRENCIAS_PATH.exists():
         return {"erro": pd.DataFrame({"mensagem": [str(OCORRENCIAS_PATH)]})}
 
-    ocorrencias = ler_csv(OCORRENCIAS_PATH, OCORRENCIAS_COLUNAS)
-    for coluna in ["ano", "mes", "br", "mortos", "feridos_graves", "feridos_leves", "total_vitimas"]:
+    colunas_disponiveis = pd.read_csv(OCORRENCIAS_PATH, sep=";", encoding="utf-8-sig", nrows=0).columns
+    colunas_para_ler = [coluna for coluna in OCORRENCIAS_COLUNAS if coluna in colunas_disponiveis]
+    ocorrencias = ler_csv(OCORRENCIAS_PATH, colunas_para_ler)
+    for coluna in ["ano", "mes", "br", "mortos", "acidente_fatal", "feridos_graves", "feridos_leves", "total_vitimas"]:
         if coluna in ocorrencias.columns:
             ocorrencias[coluna] = pd.to_numeric(ocorrencias[coluna], errors="coerce")
+    if "acidente_fatal" not in ocorrencias.columns and "mortos" in ocorrencias.columns:
+        ocorrencias["acidente_fatal"] = (ocorrencias["mortos"].fillna(0) >= 1).astype(int)
 
     ocorrencias = normalizar_categorias_dashboard(ocorrencias)
 
@@ -574,6 +582,7 @@ def render_metric_card(label: str, value: str, description: str) -> None:
     estilos_por_card = {
         "total de acidentes": ("", "colisao-de-carro.png"),
         "mortos": ("red", "cranio.png"),
+        "acidentes fatais": ("red", "cranio.png"),
         "feridos graves": ("red", "paciente.png"),
         "feridos leves": ("yellow", "placa-de-hospital.png"),
         "vítimas": ("green", "vitima.png"),
@@ -601,15 +610,19 @@ def render_metric_card(label: str, value: str, description: str) -> None:
 def criar_cards(df: pd.DataFrame) -> None:
     total_acidentes = len(df)
     mortos = df.get("mortos", pd.Series(dtype=float)).sum()
+    acidentes_fatais = df.get("acidente_fatal", pd.Series(dtype=float)).sum()
     feridos_graves = df.get("feridos_graves", pd.Series(dtype=float)).sum()
     feridos_leves = df.get("feridos_leves", pd.Series(dtype=float)).sum()
     total_vitimas = df.get("total_vitimas", pd.Series(dtype=float)).sum()
     acidentes_graves = (df.get("acidente_grave", pd.Series(dtype=str)) == "Sim").sum()
     percentual_graves = (acidentes_graves / total_acidentes * 100) if total_acidentes else 0
+    percentual_fatalidade = (acidentes_fatais / total_acidentes * 100) if total_acidentes else 0
 
     cards = [
         ("Total de acidentes", formatar_numero(total_acidentes), "Registros no recorte atual"),
+        ("Acidentes fatais", formatar_numero(acidentes_fatais), "Ocorrências com mortos >= 1"),
         ("Mortos", formatar_numero(mortos), "Óbitos registrados"),
+        ("Percentual de fatalidade", f"{percentual_fatalidade:.1f}%", "Acidentes fatais / total"),
         ("Feridos graves", formatar_numero(feridos_graves), "Casos com ferimento grave"),
         ("Feridos leves", formatar_numero(feridos_leves), "Casos com ferimento leve"),
         ("Vítimas", formatar_numero(total_vitimas), "Mortos + feridos"),
@@ -617,10 +630,11 @@ def criar_cards(df: pd.DataFrame) -> None:
         ("Percentual de graves", f"{percentual_graves:.1f}%", "Sobre o total filtrado"),
     ]
 
-    colunas = st.columns(len(cards))
-    for coluna, (label, value, description) in zip(colunas, cards):
-        with coluna:
-            render_metric_card(label, value, description)
+    for inicio in range(0, len(cards), 3):
+        colunas = st.columns(3)
+        for coluna, (label, value, description) in zip(colunas, cards[inicio : inicio + 3]):
+            with coluna:
+                render_metric_card(label, value, description)
 
 
 def render_header() -> None:
@@ -748,7 +762,7 @@ def grafico_barras(
         fig.update_layout(yaxis=dict(categoryorder="total ascending"))
 
     aplicar_layout_grafico(fig, titulo)
-    st.plotly_chart(fig, use_container_width=True, key=key)
+    st.plotly_chart(fig, width="stretch", key=key)
 
 
 def contagem(df: pd.DataFrame, coluna: str, nome_valor: str = "acidentes", top: int | None = None) -> pd.DataFrame:
@@ -808,7 +822,7 @@ def tabela_ranking(df: pd.DataFrame, legenda: str, top: int | None = None) -> No
         st.info("Tabela indisponível para o recorte atual.")
         return
     tabela = df.head(top) if top else df
-    st.dataframe(nomes_amigaveis(tabela), use_container_width=True, hide_index=True)
+    st.dataframe(nomes_amigaveis(tabela), width="stretch", hide_index=True)
 
 
 def aviso_base_modelada(dados: dict[str, pd.DataFrame]) -> None:
@@ -841,6 +855,7 @@ def render_visao_geral(df: pd.DataFrame) -> None:
         .agg(
             acidentes=("id", "count"),
             mortos=("mortos", "sum"),
+            acidentes_fatais=("acidente_fatal", "sum"),
             feridos_graves=("feridos_graves", "sum"),
             feridos_leves=("feridos_leves", "sum"),
             vitimas=("total_vitimas", "sum"),
@@ -874,12 +889,27 @@ def render_perfil_acidentes(df: pd.DataFrame) -> None:
 
 
 def render_gravidade(df: pd.DataFrame) -> None:
-    secao("Gravidade", "Leitura de severidade por mortes, feridos graves e acidentes graves.")
+    secao("Gravidade", "Leitura de severidade com foco na variável-alvo acidente_fatal.")
     col1, col2 = st.columns([1, 1])
     with col1:
-        grafico_barras(soma_por(df, "uf", "mortos"), "uf", "mortos", "Mortos por UF - Top 15", key="grafico_mortos_por_uf")
+        fatalidade_uf = (
+            df.groupby("uf", dropna=False)
+            .agg(total_acidentes=("id", "count"), acidentes_fatais=("acidente_fatal", "sum"))
+            .reset_index()
+        )
+        fatalidade_uf["percentual_fatalidade"] = (
+            fatalidade_uf["acidentes_fatais"] / fatalidade_uf["total_acidentes"] * 100
+        ).fillna(0)
+        fatalidade_uf = fatalidade_uf.sort_values("percentual_fatalidade", ascending=False).head(15)
+        grafico_barras(
+            fatalidade_uf,
+            "uf",
+            "percentual_fatalidade",
+            "% de acidentes fatais por UF - Top 15",
+            key="grafico_percentual_fatalidade_uf",
+        )
     with col2:
-        grafico_barras(soma_por(df, "uf", "feridos_graves"), "uf", "feridos_graves", "Feridos graves por UF - Top 15", key="grafico_feridos_graves_por_uf")
+        grafico_barras(soma_por(df, "uf", "mortos"), "uf", "mortos", "Mortos por UF - Top 15", key="grafico_mortos_por_uf")
 
     col3, col4 = st.columns([1, 1])
     with col3:
@@ -905,7 +935,7 @@ def render_gravidade(df: pd.DataFrame) -> None:
                 color_discrete_sequence=[CORES["azul"], CORES["vermelho"]],
             )
             aplicar_layout_grafico(fig, "Volume total x acidentes graves por UF")
-            st.plotly_chart(fig, use_container_width=True, key="grafico_volume_total_x_graves_uf")
+            st.plotly_chart(fig, width="stretch", key="grafico_volume_total_x_graves_uf")
 
 
 def render_rodovias_locais(df: pd.DataFrame, dados: dict[str, pd.DataFrame]) -> None:

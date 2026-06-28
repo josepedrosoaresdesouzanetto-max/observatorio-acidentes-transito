@@ -10,11 +10,13 @@ Eu escolhi esse tema porque trânsito é um assunto muito presente no Brasil. To
 
 A fonte dos dados foi a PRF, que disponibiliza bases públicas sobre acidentes em rodovias federais. Essas bases trazem informações como data, horário, estado, município, BR, causa do acidente, tipo de acidente, clima, fase do dia e também dados de gravidade, como mortos, feridos leves e feridos graves.
 
+O problema analítico central ficou assim: quais fatores estão associados a acidentes com vítimas fatais nas rodovias federais brasileiras? Para trabalhar essa pergunta, eu criei a variável `acidente_fatal`. Ela não é a fórmula do índice de risco. Ela é uma variável binária criada a partir do campo `mortos`: quando `mortos >= 1`, `acidente_fatal = 1`; quando `mortos = 0`, `acidente_fatal = 0`.
+
 No projeto, eu trabalhei principalmente com os anos de **2024, 2025 e 2026**. Um ponto importante é que **2026 ainda é um ano parcial**, então ele não pode ser comparado diretamente com anos fechados como se tivesse o mesmo peso. Eu deixei isso sinalizado no README, na documentação, no relatório e no dashboard para evitar uma interpretação errada.
 
 Antes da análise, foi preciso organizar os dados. Eu separei o projeto em camadas: primeiro os dados brutos, depois os dados tratados e depois os dados modelados. Na limpeza, eu padronizei nomes de colunas, tratei datas e horários, organizei valores nulos, removi duplicidades quando necessário e criei algumas colunas novas que ajudam na análise.
 
-Por exemplo, a partir da data e do horário eu criei informações como ano, mês, hora e faixa de horário. Também criei campos como total de vítimas, total de feridos e uma marcação de acidente grave. Isso facilita muito porque, depois do tratamento, a análise fica mais direta.
+Por exemplo, a partir da data e do horário eu criei informações como ano, mês, hora e faixa de horário. Também criei campos como total de vítimas, total de feridos, acidente grave e `acidente_fatal`. Isso facilita muito porque, depois do tratamento, dá para comparar acidentes fatais e não fatais por UF, BR, causa, horário, clima e tipo de pista.
 
 Depois dessa etapa, eu gerei gráficos e tabelas para responder algumas perguntas principais. Uma delas é: quais estados concentram mais acidentes? Outra é: quais causas aparecem com mais frequência? Também olhei para horários, dias da semana, condição meteorológica, tipos de acidente e ranking de rodovias.
 
@@ -24,7 +26,7 @@ Com isso, dá para perceber uma coisa importante: nem sempre o local com mais ac
 
 Nesse ponto eu também criei um dashboard em Streamlit. A ideia do dashboard é permitir que a análise seja explorada de forma interativa. Ele tem filtros por ano, UF, BR, causa, tipo de acidente, fase do dia, condição meteorológica e faixa de horário.
 
-Na primeira parte do dashboard aparecem cards com indicadores gerais, como total de acidentes, mortos, feridos graves, feridos leves, vítimas, acidentes graves e percentual de acidentes graves. Depois, nas abas, dá para navegar por visão geral, perfil dos acidentes, gravidade, rodovias e locais críticos, e índice de risco.
+Na primeira parte do dashboard aparecem cards com indicadores gerais, como total de acidentes, acidentes fatais, mortos, percentual de fatalidade, feridos graves, feridos leves, vítimas, acidentes graves e percentual de acidentes graves. Depois, nas abas, dá para navegar por visão geral, perfil dos acidentes, gravidade, rodovias e locais críticos, e índice de risco.
 
 Se eu estivesse apresentando com o dashboard aberto, aqui eu mostraria rapidamente os filtros e explicaria que, quando nenhum filtro está selecionado, o painel considera todos os dados. Depois eu escolheria um ano ou uma UF para mostrar como os gráficos mudam. Isso deixa a apresentação mais visual e ajuda a mostrar que o projeto não é só um relatório estático.
 

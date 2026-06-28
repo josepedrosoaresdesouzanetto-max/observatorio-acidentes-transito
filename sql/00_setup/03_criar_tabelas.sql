@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS tratado.ocorrencias (
     faixa_horario TEXT,
     total_feridos INTEGER,
     total_vitimas INTEGER,
+    acidente_fatal INTEGER,
     acidente_grave TEXT,
     nivel_gravidade TEXT
 );
