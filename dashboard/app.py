@@ -259,9 +259,9 @@ def aplicar_estilo_global() -> None:
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 2rem;
-            height: 2rem;
-            padding: .28rem;
+            width: 42px;
+            height: 42px;
+            padding: 4px;
             border-radius: 10px;
             background: rgba(15, 23, 42, .58);
             border: 1px solid rgba(148, 163, 184, .18);
@@ -269,8 +269,9 @@ def aplicar_estilo_global() -> None:
         }}
 
         .metric-icon img {{
-            width: 26px;
-            height: 26px;
+            display: block;
+            width: 36px;
+            height: 36px;
             object-fit: contain;
             opacity: .92;
             filter: drop-shadow(0 3px 8px rgba(0, 0, 0, .30));
@@ -580,7 +581,7 @@ def carregar_icone_base64(caminho_icone: str) -> str:
 def render_metric_card(label: str, value: str, description: str) -> None:
     """Renderiza um card individual como HTML seguro no Streamlit."""
     estilos_por_card = {
-        "total de acidentes": ("", "colisao-de-carro.png"),
+        "total de acidentes": ("", "atencao.png"),
         "mortos": ("red", "cranio.png"),
         "acidentes fatais": ("red", "cranio.png"),
         "feridos graves": ("red", "paciente.png"),
@@ -588,6 +589,7 @@ def render_metric_card(label: str, value: str, description: str) -> None:
         "vítimas": ("green", "vitima.png"),
         "vitimas": ("green", "vitima.png"),
         "acidentes graves": ("red", "carros-batendo.png"),
+        "percentual de fatalidade": ("yellow", "acidente-de-carro.png"),
         "percentual de graves": ("yellow", "percentagem.png"),
     }
     accent_class, icon_file = estilos_por_card.get(label.lower(), ("", "colisao-de-carro.png"))
