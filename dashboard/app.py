@@ -622,7 +622,7 @@ def criar_cards(df: pd.DataFrame) -> None:
 
     cards = [
         ("Total de acidentes", formatar_numero(total_acidentes), "Registros no recorte atual"),
-        ("Acidentes fatais", formatar_numero(acidentes_fatais), "Ocorrências com mortos >= 1"),
+        ("Acidentes fatais", formatar_numero(acidentes_fatais), "Com morte registrada"),
         ("Mortos", formatar_numero(mortos), "Óbitos registrados"),
         ("Percentual de fatalidade", f"{percentual_fatalidade:.1f}%", "Acidentes fatais / total"),
         ("Feridos graves", formatar_numero(feridos_graves), "Casos com ferimento grave"),
