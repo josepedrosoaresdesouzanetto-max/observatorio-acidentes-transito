@@ -42,4 +42,4 @@ O índice de risco é uma métrica educacional simples, criada para comparar gru
 
 ## 10. Conclusões
 
-As conclusões são baseadas nos dados processados e deixam claro que 2026 é parcial e que a análise mostra padrões, não causalidade absoluta.
+As conclusões são baseadas nos dados processados e deixam claro que o ano corrente é parcial quando estiver presente no recorte e que a análise mostra padrões, não causalidade absoluta.

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pandas as pd
 
-from src.carregar_dados import carregar_dados
-from src.config import ANOS_ANALISE, TRATADOS_DIR
+from src.carregar_dados import carregar_dados, resolver_anos_analise
+from src.config import TRATADOS_DIR
 from src.criar_colunas_derivadas import criar_derivadas
 from src.utils import salvar_csv
 
@@ -30,9 +30,11 @@ def limpar_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     return criar_derivadas(df)
 
 
-def gerar_tratados(anos: tuple[int, ...] = ANOS_ANALISE) -> tuple[pd.DataFrame, pd.DataFrame]:
-    ocorrencias = limpar_dataframe(carregar_dados("ocorrencia", anos=anos))
-    pessoas = limpar_dataframe(carregar_dados("pessoa", anos=anos))
+def gerar_tratados(anos: tuple[int, ...] | None = None) -> tuple[pd.DataFrame, pd.DataFrame]:
+    anos_resolvidos = anos or resolver_anos_analise()
+    print(f"Anos processados: {anos_resolvidos}")
+    ocorrencias = limpar_dataframe(carregar_dados("ocorrencia", anos=anos_resolvidos))
+    pessoas = limpar_dataframe(carregar_dados("pessoa", anos=anos_resolvidos))
     salvar_csv(ocorrencias, TRATADOS_DIR / "ocorrencias_tratadas.csv")
     salvar_csv(pessoas, TRATADOS_DIR / "pessoas_tratadas.csv")
     return ocorrencias, pessoas

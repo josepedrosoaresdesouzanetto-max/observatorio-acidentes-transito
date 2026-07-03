@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from src.carregar_dados import carregar_dados, localizar_arquivos
+from src.carregar_dados import anos_disponiveis, carregar_dados, localizar_arquivos, resolver_anos_analise
 from src.config import OCORRENCIA_BRUTOS_DIR, PESSOA_BRUTOS_DIR, TRATADOS_DIR
 
 
@@ -19,6 +19,19 @@ def test_carrega_ocorrencias_2024():
     df = carregar_dados("ocorrencia", anos=(2024,))
     assert not df.empty
     assert {"id", "data_inversa", "uf", "municipio", "causa_acidente"}.issubset(df.columns)
+
+
+def test_resolve_anos_analise_a_partir_dos_brutos(monkeypatch):
+    arquivos = [
+        Path("acidentes_2022_ocorrencia.csv"),
+        Path("acidentes_2024_ocorrencia.csv"),
+        Path("acidentes_2026_ocorrencia.csv"),
+        Path("acidentes_2027_ocorrencia.csv"),
+    ]
+    monkeypatch.setattr("src.carregar_dados.localizar_arquivos", lambda tipo="ocorrencia": arquivos)
+
+    assert anos_disponiveis("ocorrencia") == (2022, 2024, 2026, 2027)
+    assert resolver_anos_analise() == (2024, 2026, 2027)
 
 
 def test_arquivos_tratados_existem_ou_orientam_execucao():

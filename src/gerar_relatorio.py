@@ -3,6 +3,7 @@ from __future__ import annotations
 import pandas as pd
 
 from src.config import MODELADOS_DIR, RELATORIOS_DIR, TABELAS_DIR, TRATADOS_DIR
+from src.recorte_temporal import texto_anos_parciais
 from src.utils import ler_csv_prf
 
 
@@ -53,7 +54,9 @@ def gerar_relatorio() -> str:
     risco_uf = ler_csv_prf(risco_path).head(10)
     risco_uf.to_csv(TABELAS_DIR / "ranking_indice_risco_uf.csv", index=False, encoding="utf-8-sig")
 
-    anos = ", ".join(str(int(a)) for a in sorted(df["ano"].dropna().unique()))
+    anos_lista = sorted(int(a) for a in df["ano"].dropna().unique())
+    anos = ", ".join(str(ano) for ano in anos_lista)
+    aviso_parcial = texto_anos_parciais(anos_lista)
     total = len(df)
 
     conteudo = f"""
@@ -61,7 +64,7 @@ def gerar_relatorio() -> str:
 
 ## 1. Resumo executivo
 
-O projeto organiza e analisa dados públicos da Polícia Rodoviária Federal sobre acidentes em rodovias federais brasileiras. A análise principal usa os anos de {anos}, com 2026 tratado como recorte parcial.
+O projeto organiza e analisa dados públicos da Polícia Rodoviária Federal sobre acidentes em rodovias federais brasileiras. A análise principal usa os anos de {anos}. Controle de recorte parcial: {aviso_parcial}
 
 Foram processadas **{total:,} ocorrências** na base tratada principal.
 
@@ -79,7 +82,7 @@ Os dados são públicos e vieram da PRF. O projeto usa arquivos de ocorrência (
 
 {dataframe_markdown(acidentes_ano)}
 
-O ano de 2026 é parcial, pois ainda está em andamento. Por isso, não deve ser comparado diretamente com anos fechados sem essa ressalva.
+{aviso_parcial} Por isso, anos parciais não devem ser comparados diretamente com anos fechados sem essa ressalva.
 
 ## 5. Dados utilizados
 
@@ -144,11 +147,11 @@ O índice é educacional, simples e transparente. Ele não representa previsão 
 - Rankings por UF, BR e causa ajudam a localizar concentrações de ocorrências.
 - O índice de risco facilita a leitura combinada entre frequência e severidade.
 - A variável `acidente_fatal` permite comparar ocorrências fatais e não fatais sem confundir o campo original `mortos` com a regra de transformação.
-- 2026 já possui registros úteis, mas ainda não pode ser comparado como ano fechado.
+- {aviso_parcial}
 
 ## 11. Limitações
 
-- 2026 é parcial.
+- Ano corrente presente no recorte deve ser tratado como parcial.
 - A qualidade da análise depende da qualidade dos registros disponíveis.
 - A base cobre o escopo de rodovias federais registrado pela PRF.
 - A análise mostra padrões, não causalidade absoluta.
@@ -162,7 +165,7 @@ O projeto está organizado como uma base educacional e técnica para demonstrar 
 
 - Refinar os notebooks com saídas executadas.
 - Manter e evoluir o dashboard interativo com novos filtros e comparativos.
-- Atualizar 2026 quando o ano for fechado.
+- Adicionar novos CSVs públicos da PRF na camada bruta e rodar `python -m src.atualizar_projeto` quando houver publicação nova.
 - Incluir indicadores externos, como frota, população ou fluxo de veículos.
 """
 

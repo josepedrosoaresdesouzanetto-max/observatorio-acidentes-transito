@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import json
 from pathlib import Path
 from typing import Iterable
 
@@ -8,14 +9,18 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from src.recorte_temporal import ano_atual, texto_anos_parciais
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 TRATADOS_DIR = PROJECT_ROOT / "dados" / "02_tratados"
 MODELADOS_DIR = PROJECT_ROOT / "dados" / "03_modelados"
 ICONS_DIR = PROJECT_ROOT / "dashboard" / "assets" / "icons"
+MAPS_DIR = PROJECT_ROOT / "dashboard" / "assets" / "maps"
 
 OCORRENCIAS_PATH = TRATADOS_DIR / "ocorrencias_tratadas.csv"
 PESSOAS_PATH = TRATADOS_DIR / "pessoas_tratadas.csv"
+BRASIL_UFS_GEOJSON_PATH = MAPS_DIR / "brasil_ufs.geojson"
 
 INDICE_PATHS = {
     "uf": MODELADOS_DIR / "indice_risco_uf.csv",
@@ -114,6 +119,33 @@ DIA_SEMANA_ORDEM = [
 ]
 
 RISCO_ORDEM = ["Baixo", "Médio", "Alto", "Crítico"]
+
+METRICAS_MAPA_UF = {
+    "Total de acidentes": "total_acidentes",
+    "Acidentes fatais": "acidentes_fatais",
+    "Percentual de fatalidade": "percentual_fatalidade",
+    "Mortos": "mortos",
+    "Feridos graves": "feridos_graves",
+}
+
+TITULOS_LEGENDA_MAPA = {
+    "total_acidentes": "Acidentes",
+    "acidentes_fatais": "Acidentes fatais",
+    "percentual_fatalidade": "% fatalidade",
+    "mortos": "Mortos",
+    "feridos_graves": "Feridos graves",
+}
+
+ROTULOS_FILTROS_MAPA = {
+    "ano": "Ano",
+    "uf": "UF",
+    "br": "BR",
+    "causa_acidente": "Causa",
+    "tipo_acidente": "Tipo de acidente",
+    "fase_dia": "Fase do dia",
+    "condicao_metereologica": "Condição meteorológica",
+    "faixa_horario": "Faixa horária",
+}
 
 
 st.set_page_config(
@@ -467,6 +499,14 @@ def carregar_dados() -> dict[str, pd.DataFrame]:
     }
 
 
+@st.cache_data(show_spinner=False)
+def carregar_geojson_brasil_ufs() -> dict:
+    """Carrega o GeoJSON local das UFs brasileiras para o mapa coroplético."""
+    if not BRASIL_UFS_GEOJSON_PATH.exists():
+        return {"type": "FeatureCollection", "features": []}
+    return json.loads(BRASIL_UFS_GEOJSON_PATH.read_text(encoding="utf-8"))
+
+
 def ordenar_opcoes(coluna: str, valores: Iterable) -> list:
     opcoes = [valor for valor in pd.Series(list(valores)).dropna().unique().tolist()]
 
@@ -559,6 +599,40 @@ def formatar_numero(valor: float | int) -> str:
     return f"{int(valor):,}".replace(",", ".")
 
 
+def formatar_percentual(valor: float | int, casas: int = 1) -> str:
+    return f"{float(valor):.{casas}f}%".replace(".", ",")
+
+
+def resumo_valores_filtro(coluna: str, valores: list) -> str:
+    if not valores:
+        return "Todos os valores"
+    if coluna == "br":
+        valores_formatados = [formatar_br(valor) for valor in valores]
+    else:
+        valores_formatados = [str(valor) for valor in valores]
+    if len(valores_formatados) <= 4:
+        return ", ".join(valores_formatados)
+    return f"{', '.join(valores_formatados[:4])} +{len(valores_formatados) - 4}"
+
+
+def resumo_filtros_mapa(filtros: dict[str, list] | None) -> str:
+    filtros = filtros or {}
+    linhas = [
+        "Para alterar os filtros, use a barra lateral esquerda. Este quadro apenas resume o recorte aplicado ao mapa."
+    ]
+    for coluna, rotulo in ROTULOS_FILTROS_MAPA.items():
+        linhas.append(f"- **{rotulo}:** {resumo_valores_filtro(coluna, filtros.get(coluna, []))}")
+    return "\n".join(linhas)
+
+
+def texto_curto_filtros_mapa(filtros: dict[str, list] | None) -> str:
+    filtros = filtros or {}
+    partes = []
+    for coluna in ["ano", "uf", "br", "tipo_acidente", "condicao_metereologica"]:
+        partes.append(f"{ROTULOS_FILTROS_MAPA[coluna]}: {resumo_valores_filtro(coluna, filtros.get(coluna, []))}")
+    return " | ".join(partes)
+
+
 @st.cache_data(show_spinner=False)
 def carregar_icone_base64(caminho_icone: str) -> str:
     """Carrega um ícone local e devolve um data URI para uso nos cards."""
@@ -640,14 +714,15 @@ def criar_cards(df: pd.DataFrame) -> None:
 
 
 def render_header() -> None:
+    badge_ano_corrente = f"{ano_atual()} parcial se presente"
     st.markdown(
-        """
+        f"""
         <div class="hero">
             <h1>Observatório de Acidentes de Trânsito no Brasil</h1>
             <p>Análise interativa de acidentes em rodovias federais brasileiras com dados públicos da PRF.</p>
             <div class="badges">
                 <span class="badge">Dados públicos da PRF</span>
-                <span class="badge yellow">2026 parcial</span>
+                <span class="badge yellow">{badge_ano_corrente}</span>
                 <span class="badge red">Índice educacional</span>
             </div>
         </div>
@@ -656,11 +731,19 @@ def render_header() -> None:
     )
 
 
-def render_avisos() -> None:
+def anos_disponiveis_dashboard(df: pd.DataFrame) -> tuple[int, ...]:
+    if "ano" not in df.columns:
+        return ()
+    anos = pd.to_numeric(df["ano"], errors="coerce").dropna().astype(int)
+    return tuple(sorted(anos.unique().tolist()))
+
+
+def render_avisos(df: pd.DataFrame) -> None:
+    aviso_parcial = texto_anos_parciais(anos_disponiveis_dashboard(df))
     st.markdown(
-        """
+        f"""
         <div class="info-strip">
-            <strong>Leitura responsável:</strong> Os dados de 2026 são parciais, pois o ano ainda está em andamento.
+            <strong>Leitura responsável:</strong> {aviso_parcial}
             Comparações com anos fechados devem ser interpretadas com cuidado. O índice de risco é uma métrica
             educacional criada para apoiar a análise. Ele não representa previsão oficial nem classificação institucional da PRF.
         </div>
@@ -868,6 +951,168 @@ def render_visao_geral(df: pd.DataFrame) -> None:
     tabela_ranking(resumo, "Resumo anual dos registros filtrados.")
 
 
+def preparar_mapa_uf(df: pd.DataFrame) -> pd.DataFrame:
+    if df.empty or "uf" not in df.columns:
+        return pd.DataFrame()
+
+    agregacoes = {
+        "total_acidentes": ("id", "count"),
+        "acidentes_fatais": ("acidente_fatal", "sum"),
+        "mortos": ("mortos", "sum"),
+        "feridos_graves": ("feridos_graves", "sum"),
+    }
+    if "feridos_leves" in df.columns:
+        agregacoes["feridos_leves"] = ("feridos_leves", "sum")
+
+    mapa = (
+        df.assign(uf=df["uf"].astype(str).str.upper().str.strip())
+        .groupby("uf", dropna=False)
+        .agg(**agregacoes)
+        .reset_index()
+    )
+    if "feridos_leves" not in mapa.columns:
+        mapa["feridos_leves"] = 0
+
+    mapa["percentual_fatalidade"] = (
+        mapa["acidentes_fatais"] / mapa["total_acidentes"] * 100
+    ).replace([float("inf"), -float("inf")], 0).fillna(0)
+    return mapa[mapa["uf"].str.match(r"^[A-Z]{2}$", na=False)]
+
+
+def render_visao_geografica(df: pd.DataFrame, filtros: dict[str, list] | None = None) -> None:
+    secao(
+        "Visão Geográfica",
+        "Mapa interativo por UF para comparar volume absoluto e fatalidade proporcional.",
+    )
+    st.markdown(
+        """
+        <div class="info-strip">
+            <strong>Pergunta orientadora:</strong> Quais fatores estão associados a acidentes fatais?<br>
+            <strong>Leitura esperada:</strong> Neste projeto, a pergunta "o que causa acidente fatal?" é tratada
+            como análise de associação, não como prova de causalidade direta. Na visão geográfica, o recorte mostra
+            quais estados concentram mais acidentes e acidentes fatais, e quais apresentam maior percentual de
+            fatalidade. Volume absoluto e proporção contam histórias diferentes.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.caption("Use a barra lateral esquerda para alterar o recorte. O resumo abaixo serve apenas para consulta.")
+
+    mapa = preparar_mapa_uf(df)
+    geojson_ufs = carregar_geojson_brasil_ufs()
+    if mapa.empty or not geojson_ufs.get("features"):
+        st.info("Sem dados geográficos suficientes para o recorte atual.")
+        return
+
+    metrica_label = st.selectbox(
+        "Métrica do mapa",
+        list(METRICAS_MAPA_UF.keys()),
+        index=2,
+        help="Escolha se o mapa deve destacar volume absoluto ou fatalidade proporcional.",
+    )
+    with st.expander("Resumo dos filtros ativos", expanded=False):
+        st.markdown(resumo_filtros_mapa(filtros))
+
+    metrica = METRICAS_MAPA_UF[metrica_label]
+    mapa = mapa.sort_values(metrica, ascending=False)
+    for coluna in ["total_acidentes", "acidentes_fatais", "mortos", "feridos_graves", "feridos_leves"]:
+        mapa[f"{coluna}_fmt"] = mapa[coluna].apply(formatar_numero)
+    mapa["percentual_fatalidade_fmt"] = mapa["percentual_fatalidade"].apply(formatar_percentual)
+
+    titulo_legenda = TITULOS_LEGENDA_MAPA.get(metrica, ROTULOS.get(metrica, metrica))
+    colorbar_config = dict(
+        title=dict(text=titulo_legenda, font=dict(color="#0f172a", size=12)),
+        thickness=14,
+        len=0.82,
+        tickfont=dict(color="#0f172a", size=11),
+    )
+    if metrica == "percentual_fatalidade":
+        colorbar_config.update(tickformat=".1f", ticksuffix="%")
+    else:
+        colorbar_config.update(tickformat=",.0f")
+
+    col1, col2 = st.columns([1.45, 1])
+    with col1:
+        fig = px.choropleth(
+            mapa,
+            geojson=geojson_ufs,
+            locations="uf",
+            featureidkey="properties.sigla",
+            color=metrica,
+            hover_name="uf",
+            custom_data=[
+                "total_acidentes_fmt",
+                "acidentes_fatais_fmt",
+                "percentual_fatalidade_fmt",
+                "mortos_fmt",
+                "feridos_graves_fmt",
+                "feridos_leves_fmt",
+            ],
+            color_continuous_scale=["#0f172a", CORES["azul"], CORES["amarelo"], CORES["vermelho"]],
+            labels=ROTULOS,
+        )
+        aplicar_layout_grafico(
+            fig,
+            f"Mapa por UF - {metrica_label}<br><sup>Filtros: {texto_curto_filtros_mapa(filtros)}</sup>",
+        )
+        fig.update_geos(
+            fitbounds="locations",
+            visible=False,
+            bgcolor="#ffffff",
+        )
+        fig.update_traces(
+            marker_line_width=0.95,
+            marker_line_color="#111827",
+            hovertemplate=(
+                "<b>UF: %{location}</b><br><br>"
+                "Total de acidentes: %{customdata[0]}<br>"
+                "Acidentes fatais: %{customdata[1]}<br>"
+                "% fatalidade: %{customdata[2]}<br>"
+                "Mortos: %{customdata[3]}<br>"
+                "Feridos graves: %{customdata[4]}<br>"
+                "Feridos leves: %{customdata[5]}<extra></extra>"
+            ),
+        )
+        fig.update_layout(
+            coloraxis_colorbar=colorbar_config,
+            height=560,
+            margin=dict(l=0, r=0, t=76, b=0),
+            paper_bgcolor="#ffffff",
+            plot_bgcolor="#ffffff",
+            font=dict(color="#0f172a"),
+            title=dict(font=dict(color="#0f172a", size=17)),
+            hoverlabel=dict(
+                bgcolor="rgba(15, 23, 42, .96)",
+                font_size=13,
+                font_color="#f8fafc",
+                bordercolor="#f8fafc",
+            ),
+        )
+        st.plotly_chart(fig, width="stretch", key=f"mapa_uf_{metrica}")
+
+    with col2:
+        ranking = mapa[
+            ["uf", "total_acidentes", "acidentes_fatais", "percentual_fatalidade", "mortos", "feridos_graves", "feridos_leves"]
+        ]
+        st.markdown(
+            f'<div class="ranking-caption">Todas as UFs por {metrica_label.lower()}.</div>',
+            unsafe_allow_html=True,
+        )
+        st.dataframe(
+            nomes_amigaveis(ranking),
+            width="stretch",
+            hide_index=True,
+            column_config={
+                "Total de acidentes": st.column_config.NumberColumn("Total de acidentes", format="%d"),
+                "Acidentes fatais": st.column_config.NumberColumn("Acidentes fatais", format="%d"),
+                "% fatalidade": st.column_config.NumberColumn("% fatalidade", format="%.1f%%"),
+                "Mortos": st.column_config.NumberColumn("Mortos", format="%d"),
+                "Feridos graves": st.column_config.NumberColumn("Feridos graves", format="%d"),
+                "Feridos leves": st.column_config.NumberColumn("Feridos leves", format="%d"),
+            },
+        )
+
+
 def render_perfil_acidentes(df: pd.DataFrame) -> None:
     secao("Perfil dos Acidentes", "Principais características dos acidentes registrados pela PRF.")
     col1, col2 = st.columns([1, 1])
@@ -1047,7 +1292,7 @@ def main() -> None:
         return
 
     ocorrencias = dados["ocorrencias"]
-    render_avisos()
+    render_avisos(ocorrencias)
 
     if not bool(dados["pessoas_existe"].loc[0, "existe"]):
         st.warning("Arquivo `pessoas_tratadas.csv` não encontrado. O dashboard seguirá com ocorrências.")
@@ -1062,9 +1307,10 @@ def main() -> None:
 
     criar_cards(filtrado)
 
-    aba_geral, aba_perfil, aba_gravidade, aba_locais, aba_indice = st.tabs(
+    aba_geral, aba_geo, aba_perfil, aba_gravidade, aba_locais, aba_indice = st.tabs(
         [
             "Visão Geral",
+            "Visão Geográfica",
             "Perfil dos Acidentes",
             "Gravidade",
             "Rodovias e Locais Críticos",
@@ -1074,6 +1320,8 @@ def main() -> None:
 
     with aba_geral:
         render_visao_geral(filtrado)
+    with aba_geo:
+        render_visao_geografica(filtrado, filtros)
     with aba_perfil:
         render_perfil_acidentes(filtrado)
     with aba_gravidade:

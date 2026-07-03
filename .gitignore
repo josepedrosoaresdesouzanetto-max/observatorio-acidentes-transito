@@ -6,6 +6,7 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .ipynb_checkpoints/
+/logs/
 
 # Arquivos locais/sensíveis
 .env
@@ -33,3 +34,4 @@ dados/**/*.csv
 # Manter estrutura útil
 !dados/**/.gitkeep
 !dashboard/imagens/.gitkeep
+*.lnk

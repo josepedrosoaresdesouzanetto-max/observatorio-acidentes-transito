@@ -1,0 +1,9 @@
+﻿arquivo;tipo;ano;tamanho_bytes;modificado_em;sha256
+dados\01_brutos\ocorrencia\acidentes_2022_ocorrencia.csv;ocorrencia;2022;18723306;2024-08-15 21:46:17;d11bbfdec9b5df6f08a083c63acb2c1b4d3bad71d31481d7ce1368d5fa38783a
+dados\01_brutos\ocorrencia\acidentes_2023_ocorrencia.csv;ocorrencia;2023;19770946;2024-08-15 22:02:31;2e6a9eac714524822fc3150be4d0614e27c7f14aa674520c94e5d2e4089356dd
+dados\01_brutos\ocorrencia\acidentes_2024_ocorrencia.csv;ocorrencia;2024;21644260;2025-02-17 14:17:01;a3b7423cf643acd5de12742f319d5456930b1f105b44df4b81fae560b40af64c
+dados\01_brutos\ocorrencia\acidentes_2025_ocorrencia.csv;ocorrencia;2025;21143436;2026-03-18 17:05:58;bb844d45a07b5b50f5f76011e28f47e370fa6742e9211edac5510dcbe72ce4d8
+dados\01_brutos\ocorrencia\acidentes_2026_ocorrencia.csv;ocorrencia;2026;7731814;2026-06-17 17:53:00;f2ad54f9964564c5028e3187d794eccecfe3fa0634ce9a089611d874e75983b7
+dados\01_brutos\pessoa\acidentes_2024_pessoa.csv;pessoa;2024;74385175;2025-02-17 14:16:41;41e10d1bc36b8890cb3180ad3d11f1914f35a5d08792c5199f4bfc8f7a325df8
+dados\01_brutos\pessoa\acidentes_2025_pessoa.csv;pessoa;2025;72881148;2026-03-18 17:05:48;5bdd2e3186cbe3ccfc915f895b9f2c2454142ce712b75f0d58728dab72a1babe
+dados\01_brutos\pessoa\acidentes_2026_pessoa.csv;pessoa;2026;31437923;2026-06-17 17:29:47;49367542809c7cebc49c4214a9e862e43d2dd796290e815cac1185810dbfd0df

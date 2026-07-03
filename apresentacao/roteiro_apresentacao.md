@@ -12,7 +12,7 @@ A fonte dos dados foi a PRF, que disponibiliza bases públicas sobre acidentes e
 
 O problema analítico central ficou assim: quais fatores estão associados a acidentes com vítimas fatais nas rodovias federais brasileiras? Para trabalhar essa pergunta, eu criei a variável `acidente_fatal`. Ela não é a fórmula do índice de risco. Ela é uma variável binária criada a partir do campo `mortos`: quando `mortos >= 1`, `acidente_fatal = 1`; quando `mortos = 0`, `acidente_fatal = 0`.
 
-No projeto, eu trabalhei principalmente com os anos de **2024, 2025 e 2026**. Um ponto importante é que **2026 ainda é um ano parcial**, então ele não pode ser comparado diretamente com anos fechados como se tivesse o mesmo peso. Eu deixei isso sinalizado no README, na documentação, no relatório e no dashboard para evitar uma interpretação errada.
+No projeto, eu trabalhei com os anos disponíveis a partir de **2024**. No recorte local atual, isso inclui **2024, 2025 e 2026**. Um ponto importante é que o **ano corrente é parcial quando aparece no recorte**; em 2026, isso significa tratar 2026 com cuidado e não comparar diretamente com anos fechados como se tivesse o mesmo peso.
 
 Antes da análise, foi preciso organizar os dados. Eu separei o projeto em camadas: primeiro os dados brutos, depois os dados tratados e depois os dados modelados. Na limpeza, eu padronizei nomes de colunas, tratei datas e horários, organizei valores nulos, removi duplicidades quando necessário e criei algumas colunas novas que ajudam na análise.
 
@@ -30,7 +30,7 @@ Na primeira parte do dashboard aparecem cards com indicadores gerais, como total
 
 Se eu estivesse apresentando com o dashboard aberto, aqui eu mostraria rapidamente os filtros e explicaria que, quando nenhum filtro está selecionado, o painel considera todos os dados. Depois eu escolheria um ano ou uma UF para mostrar como os gráficos mudam. Isso deixa a apresentação mais visual e ajuda a mostrar que o projeto não é só um relatório estático.
 
-O principal aprendizado do projeto foi perceber que análise de dados não é só gerar gráfico. A parte mais trabalhosa é organizar a base, entender as colunas, tomar cuidado com dados parciais e explicar as limitações. No caso desse projeto, a limitação mais importante é o ano de 2026, porque ele ainda não está completo.
+O principal aprendizado do projeto foi perceber que análise de dados não é só gerar gráfico. A parte mais trabalhosa é organizar a base, entender as colunas, tomar cuidado com dados parciais e explicar as limitações. No caso desse projeto, a limitação temporal é dinâmica: o ano corrente deve ser tratado como parcial enquanto ainda estiver em andamento.
 
 Também é importante lembrar que os dados mostram padrões, mas não provam causalidade sozinhos. Se uma causa aparece muito, isso não significa automaticamente que ela explica tudo. Para uma análise mais profunda, seria interessante cruzar os dados com frota de veículos, população, fluxo nas rodovias ou características de infraestrutura.
 

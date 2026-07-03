@@ -11,10 +11,13 @@ DICIONARIO_DIR = DADOS_DIR / "04_dicionario"
 RELATORIOS_DIR = PROJECT_ROOT / "relatorios"
 GRAFICOS_DIR = RELATORIOS_DIR / "graficos"
 TABELAS_DIR = RELATORIOS_DIR / "tabelas"
+LOGS_DIR = PROJECT_ROOT / "logs"
 
 ENCODINGS = ("utf-8-sig", "latin1", "cp1252")
 SEPARADOR_PADRAO = ";"
+ANO_INICIAL_ANALISE = 2024
 ANOS_ANALISE = (2024, 2025, 2026)
+URL_DADOS_ABERTOS_PRF = "https://www.gov.br/prf/pt-br/acesso-a-informacao/dados-abertos/dados-abertos-da-prf"
 
 for directory in (TRATADOS_DIR, MODELADOS_DIR, DICIONARIO_DIR, GRAFICOS_DIR, TABELAS_DIR):
     directory.mkdir(parents=True, exist_ok=True)

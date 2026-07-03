@@ -2,7 +2,7 @@
 
 ## 1. Resumo executivo
 
-O projeto organiza e analisa dados públicos da Polícia Rodoviária Federal sobre acidentes em rodovias federais brasileiras. A análise principal usa os anos de 2024, 2025, 2026, com 2026 tratado como recorte parcial.
+O projeto organiza e analisa dados públicos da Polícia Rodoviária Federal sobre acidentes em rodovias federais brasileiras. A análise principal usa os anos disponíveis a partir de 2024. No recorte local atual, isso inclui 2024, 2025 e 2026; o ano corrente é tratado como recorte parcial quando estiver presente.
 
 Foram processadas **175,459 ocorrências** na base tratada principal.
 
@@ -10,7 +10,7 @@ Foram processadas **175,459 ocorrências** na base tratada principal.
 
 Identificar padrões associados a acidentes fatais por tempo, local, rodovia, causa, tipo de acidente, clima, condições da via e gravidade, usando um fluxo reproduzível com Python, SQL, documentação e gráficos.
 
-A variável-alvo do projeto é `acidente_fatal`, criada a partir do campo original `mortos`: quando `mortos >= 1`, `acidente_fatal = 1`; quando `mortos = 0`, `acidente_fatal = 0`.
+A variável-alvo do projeto é `acidente_fatal`, criada a partir do campo original `mortos`: quando `mortos >= 1`, `acidente_fatal = 1`; quando `mortos = 0`, `acidente_fatal = 0`. Quando `acidente_fatal = 1`, isso significa que houve pelo menos uma morte registrada na ocorrência, não que morreu exatamente uma pessoa.
 
 ## 3. Fonte dos dados
 
@@ -24,7 +24,7 @@ Os dados são públicos e vieram da PRF. O projeto usa arquivos de ocorrência (
 | 2025 | 72529 |
 | 2026 | 29774 |
 
-O ano de 2026 é parcial, pois ainda está em andamento. Por isso, não deve ser comparado diretamente com anos fechados sem essa ressalva.
+O ano corrente é parcial quando estiver presente no recorte. Por isso, anos em andamento não devem ser comparados diretamente com anos fechados sem essa ressalva.
 
 ## 5. Dados utilizados
 
@@ -151,15 +151,18 @@ O índice é educacional, simples e transparente. Ele não representa previsão 
 
 ## 10. Principais insights encontrados
 
-- A análise mostra que volume de acidentes e gravidade precisam ser observados juntos.
-- Rankings por UF, BR e causa ajudam a localizar concentrações de ocorrências.
-- O índice de risco facilita a leitura combinada entre frequência e severidade.
-- A variável `acidente_fatal` permite comparar ocorrências fatais e não fatais sem confundir o campo original `mortos` com a regra de transformação.
-- 2026 já possui registros úteis, mas ainda não pode ser comparado como ano fechado.
+- A pergunta "o que causa acidente fatal?" é tratada neste projeto como análise de fatores associados, não como prova de causalidade direta. A base da PRF permite observar padrões registrados, mas não isolar causa definitiva sem dados externos de exposição ao risco.
+- O principal insight é que **volume de acidentes não é a mesma coisa que fatalidade relativa**. Estados ou rodovias com muitos acidentes podem aparecer no topo por quantidade de registros, mas a pergunta do projeto exige observar também o percentual de acidentes fatais.
+- Um exemplo importante da análise é a diferença entre volume absoluto e proporção. Uma UF pode concentrar mais acidentes fatais em quantidade total por ter maior volume de registros, enquanto outra pode apresentar maior percentual de fatalidade por ter uma proporção maior de acidentes com pelo menos uma morte.
+- A variável-alvo `acidente_fatal` permite responder melhor ao problema do curso porque separa ocorrências com morte registrada das ocorrências sem morte. Com isso, a análise deixa de olhar apenas para `mortos` como contagem e passa a comparar grupos fatais e não fatais.
+- Na análise por UF, a comparação proporcional mostra um padrão importante: UFs como MA, PA e RR aparecem com altos percentuais de acidentes fatais no recorte analisado, mesmo quando não são necessariamente as maiores em volume absoluto de acidentes.
+- Os fatores que devem orientar a leitura analítica são UF, BR, causa registrada, tipo de acidente, fase do dia, condição meteorológica e tipo de pista. Esses campos ajudam a identificar associações com fatalidade, mas não permitem afirmar causa direta.
+- O índice de risco é útil como apoio visual e educacional, porque combina frequência e severidade, mas a resposta central do projeto deve continuar sendo a análise da variável `acidente_fatal` e do percentual de fatalidade.
+- 2026 possui registros úteis, mas ainda é parcial. Por isso, comparações anuais precisam ser apresentadas com cautela.
 
 ## 11. Limitações
 
-- 2026 é parcial.
+- O ano corrente é parcial quando estiver presente no recorte.
 - A qualidade da análise depende da qualidade dos registros disponíveis.
 - A base cobre o escopo de rodovias federais registrado pela PRF.
 - A análise mostra padrões, não causalidade absoluta.
@@ -167,11 +170,13 @@ O índice é educacional, simples e transparente. Ele não representa previsão 
 
 ## 12. Conclusão
 
-O projeto está organizado como uma base educacional e técnica para demonstrar um fluxo completo de análise de dados: dados brutos, tratamento, modelagem, visualização, SQL, relatório e documentação.
+O projeto responde ao problema analítico central ao transformar o campo `mortos` na variável-alvo binária `acidente_fatal` e usar essa variável para comparar acidentes fatais e não fatais. A principal conclusão é que a análise de fatalidade precisa considerar proporções e cruzamentos por contexto, não apenas rankings de volume.
+
+Assim, o dashboard, o relatório e a documentação permitem investigar fatores associados a acidentes com vítimas fatais nas rodovias federais brasileiras, mantendo o cuidado metodológico de falar em associação, e não em causalidade. O projeto também deixa claro que o ano corrente deve ser tratado como parcial e que o índice de risco é uma métrica complementar, não a resposta principal.
 
 ## 13. Próximos passos
 
 - Refinar os notebooks com saídas executadas.
 - Manter e evoluir o dashboard interativo com novos filtros e comparativos.
-- Atualizar 2026 quando o ano for fechado.
+- Adicionar novos CSVs públicos da PRF na camada bruta e rodar `python -m src.atualizar_projeto` quando houver publicação nova.
 - Incluir indicadores externos, como frota, população ou fluxo de veículos.

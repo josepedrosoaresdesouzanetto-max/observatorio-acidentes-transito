@@ -1,0 +1,18 @@
+﻿metrica;valor;detalhe
+linhas_ocorrencias;175459;Total de linhas em ocorrencias_tratadas.csv
+ids_duplicados;0;IDs duplicados apos tratamento
+nulos_ano;0;0.00% de nulos em ano
+nulos_uf;0;0.00% de nulos em uf
+nulos_br;0;0.00% de nulos em br
+nulos_municipio;0;0.00% de nulos em municipio
+nulos_causa_acidente;0;0.00% de nulos em causa_acidente
+nulos_tipo_acidente;0;0.00% de nulos em tipo_acidente
+nulos_acidente_fatal;0;0.00% de nulos em acidente_fatal
+negativos_mortos;0;Valores negativos em mortos
+negativos_feridos_graves;0;Valores negativos em feridos_graves
+negativos_feridos_leves;0;Valores negativos em feridos_leves
+negativos_total_vitimas;0;Valores negativos em total_vitimas
+categorias_raras_uf;0;Categorias com ate 5 registros
+categorias_raras_causa_acidente;0;Categorias com ate 5 registros
+categorias_raras_tipo_acidente;0;Categorias com ate 5 registros
+categorias_raras_condicao_metereologica;2;Categorias com ate 5 registros

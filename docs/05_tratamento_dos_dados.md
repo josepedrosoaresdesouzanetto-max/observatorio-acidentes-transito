@@ -35,8 +35,35 @@ Os nomes são normalizados para evitar diferenças entre arquivos e anos. A norm
 
 ## Anos diferentes
 
-Os scripts carregam os anos definidos para a análise principal. Atualmente, 2024, 2025 e 2026 são usados no pipeline principal. Os anos 2022 e 2023 permanecem preservados como histórico bruto.
+Os scripts detectam automaticamente os anos disponíveis na camada bruta de ocorrência a partir de 2024. Atualmente, 2024, 2025 e 2026 aparecem no recorte local. Os anos 2022 e 2023 permanecem preservados como histórico bruto.
 
-## 2026 parcial
+## Ano corrente parcial
 
-Como 2026 ainda não é um ano fechado, seus resultados não devem ser comparados diretamente com anos completos sem deixar claro que o período é parcial.
+Quando o ano corrente aparece no recorte, seus resultados devem ser tratados como parciais. Em 2026, isso vale para 2026; quando o projeto avançar para 2027, a regra passa naturalmente a valer para 2027.
+
+## Auditoria de qualidade
+
+Depois do tratamento, a rotina `src.auditar_dados` gera controles de qualidade sobre `ocorrencias_tratadas.csv`.
+
+Ela verifica:
+
+- total de linhas;
+- IDs duplicados;
+- nulos em colunas essenciais;
+- valores negativos em mortos e feridos;
+- categorias raras em campos categóricos relevantes;
+- manifesto dos CSVs brutos com hash SHA-256.
+
+Comando:
+
+```powershell
+python -m src.auditar_dados
+```
+
+Saídas principais:
+
+```text
+relatorios/qualidade_dados.md
+relatorios/tabelas/qualidade_ocorrencias.csv
+relatorios/tabelas/manifesto_dados_brutos.csv
+```

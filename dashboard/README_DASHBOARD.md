@@ -71,7 +71,7 @@ Categorias raras, como `Neve` e `Granizo`, continuam disponíveis nos filtros e 
 
 ## Limitações
 
-- 2026 é parcial e não deve ser comparado diretamente com anos fechados.
+- O ano corrente é parcial quando estiver presente no recorte e não deve ser comparado diretamente com anos fechados.
 - O índice de risco é uma métrica educacional e analítica, não uma previsão oficial.
 - O dashboard depende dos CSVs tratados e modelados gerados pelos scripts do projeto.
 - Os dados são públicos e não incluem dados pessoais sensíveis no repositório.

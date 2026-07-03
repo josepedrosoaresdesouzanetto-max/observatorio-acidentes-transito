@@ -20,7 +20,7 @@ A proposta é transformar bases grandes em uma análise reproduzível, com foco 
 - em quais períodos os acidentes ocorrem mais;
 - onde há maior combinação entre volume e gravidade.
 
-O eixo analítico central do projeto é a variável-alvo `acidente_fatal`. Ela é criada a partir do campo original `mortos`: `acidente_fatal = 1` quando `mortos >= 1` e `acidente_fatal = 0` quando `mortos = 0`. Assim, o projeto diferencia o campo original, a regra de transformação e a variável usada para comparar acidentes fatais e não fatais.
+O eixo analítico central do projeto é a variável-alvo `acidente_fatal`. Ela é criada a partir do campo original `mortos`: `acidente_fatal = 1` quando `mortos >= 1` e `acidente_fatal = 0` quando `mortos = 0`. Assim, o projeto diferencia o campo original, a regra de transformação e a variável usada para comparar acidentes fatais e não fatais. Quando `acidente_fatal = 1`, isso significa que houve pelo menos uma morte registrada na ocorrência, não que morreu exatamente uma pessoa.
 
 O projeto foi desenvolvido como entrega acadêmica e também como material de portfólio júnior em análise de dados.
 
@@ -77,13 +77,19 @@ ABRIR_DASHBOARD.bat
 
 ## Principais insights
 
-Sem tratar o volume e a gravidade em conjunto, a análise pode ficar incompleta. Uma UF ou rodovia pode ter muitos acidentes, enquanto outra pode se destacar por mortes ou feridos graves.
+O insight central do projeto é que **o volume de acidentes não responde sozinho ao problema analítico do curso**. Para investigar acidentes com vítimas fatais, a leitura mais adequada é comparar a **proporção de acidentes fatais** entre grupos, usando a variável-alvo `acidente_fatal`.
 
-Por isso, o projeto inclui um **índice de risco educacional**, criado para combinar frequência e severidade. Ele não é uma previsão oficial nem um indicador validado por órgão público, mas ajuda a comparar grupos de forma transparente.
+A pergunta "o que causa acidente fatal?" é tratada com cuidado metodológico: este projeto identifica fatores **associados** à fatalidade, mas não prova causalidade direta. Para afirmar causa, seria necessário complementar a análise com dados de exposição ao risco, fluxo de veículos, infraestrutura, velocidade, fiscalização e outros fatores externos.
 
-Além do índice, o projeto analisa a **proporção de acidentes fatais**. Essa leitura é importante porque volume absoluto e fatalidade relativa podem apontar prioridades diferentes.
+Na base analisada, UFs e rodovias com muitos registros podem não ser exatamente as mesmas com maior fatalidade relativa. Por isso, o dashboard separa contagens absolutas, como total de acidentes e mortos, de métricas proporcionais, como o **percentual de fatalidade**.
 
-Outro ponto importante é que **2026 é um ano parcial**. Os resultados desse ano devem ser interpretados com cuidado e não comparados diretamente com anos fechados.
+Um exemplo importante da análise é a diferença entre volume absoluto e proporção. Uma UF pode concentrar mais acidentes fatais em quantidade total por ter maior volume de registros, enquanto outra pode apresentar maior percentual de fatalidade por ter uma proporção maior de acidentes com pelo menos uma morte. Por isso, o projeto analisa tanto acidentes fatais quanto percentual de fatalidade.
+
+A resposta analítica do projeto é: acidentes fatais devem ser observados pela comparação entre ocorrências fatais e não fatais, cruzando `acidente_fatal` com UF, BR, causa, tipo de acidente, fase do dia, clima e tipo de pista. Esses cruzamentos indicam fatores **associados** à fatalidade, mas não provam causalidade.
+
+O índice de risco permanece como métrica educacional complementar, útil para combinar frequência e severidade. Ele não substitui a variável-alvo `acidente_fatal` nem deve ser apresentado como resposta principal do problema.
+
+Outro ponto importante é que **o ano corrente deve ser tratado como parcial quando estiver no recorte**. Em 2026, isso significa interpretar 2026 com cuidado; quando o projeto avançar para 2027, a mesma regra passa a valer para 2027.
 
 ## Fonte dos dados
 
@@ -92,7 +98,7 @@ Os dados vêm de arquivos públicos da PRF. O projeto usa dois tipos principais 
 - **Ocorrências:** arquivos `datatran`, com uma linha por acidente.
 - **Pessoas/envolvidos:** arquivos `acidentes`, com registros dos envolvidos nas ocorrências.
 
-A análise principal usa os anos **2024, 2025 e 2026**. Os arquivos de 2022 e 2023 foram preservados como histórico bruto, mas não são o foco principal do relatório.
+A análise principal usa automaticamente os anos disponíveis em `dados/01_brutos/ocorrencia/` a partir de **2024**. No recorte local atual, isso cobre **2024, 2025 e 2026**. Os arquivos de 2022 e 2023 foram preservados como histórico bruto, mas não são o foco principal do relatório.
 
 ## Estrutura do projeto
 
@@ -139,6 +145,48 @@ python -m src.modelar_dados
 python -m src.calcular_indice_risco
 ```
 
+Para atualizar tudo a partir dos CSVs brutos locais, use o orquestrador:
+
+```powershell
+python -m src.atualizar_projeto
+```
+
+## Automação segura dos dados
+
+O projeto foi preparado para ser reciclável sem baixar nem sobrescrever dados brutos automaticamente. A rotina abaixo consulta a fonte pública da PRF, compara com os arquivos locais e grava um relatório de status:
+
+```powershell
+python -m src.verificar_dados_publicos --salvar-relatorio
+```
+
+Para rodar a checagem semanalmente no Windows, use:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\instalar_agendamento_verificacao.ps1
+```
+
+Por padrão, o agendamento fica semanal, segunda-feira às 09:00. Os relatórios e logs ficam em `logs/`, pasta ignorada pelo Git.
+
+## Auditoria e qualidade dos dados
+
+Para fortalecer a rastreabilidade, o projeto também gera um manifesto técnico dos CSVs brutos com tipo, ano, tamanho, data de modificação e hash SHA-256:
+
+```powershell
+python -m src.auditar_dados
+```
+
+Esse comando também gera um relatório de qualidade da base tratada, com checagens de duplicidade de ID, nulos em colunas importantes, valores negativos e categorias raras.
+
+Arquivos gerados:
+
+```text
+relatorios/tabelas/manifesto_dados_brutos.csv
+relatorios/tabelas/qualidade_ocorrencias.csv
+relatorios/qualidade_dados.md
+```
+
+Esses artefatos ajudam a demonstrar controle de dados, reprodutibilidade e maturidade do pipeline.
+
 ## Como rodar os testes
 
 ```powershell
@@ -175,7 +223,7 @@ Este projeto utiliza dados públicos disponibilizados para fins de análise educ
 
 ## Limitações
 
-- 2026 é parcial.
+- O ano corrente é parcial quando estiver presente no recorte.
 - Os resultados dependem da qualidade dos registros da fonte.
 - A análise cobre o escopo de rodovias federais registrado pela PRF.
 - Padrões encontrados não provam causalidade absoluta.
@@ -184,7 +232,7 @@ Este projeto utiliza dados públicos disponibilizados para fins de análise educ
 ## Próximos passos
 
 - Adicionar prints reais do dashboard em `docs/imagens/`.
-- Atualizar 2026 quando o ano fechar.
+- Adicionar novos CSVs públicos da PRF na camada bruta e rodar `python -m src.atualizar_projeto` quando houver publicação nova.
 - Cruzar os resultados com frota, população ou fluxo de veículos.
 - Evoluir o dashboard com novos comparativos.
 - Refinar o índice de risco.
