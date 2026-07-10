@@ -7,8 +7,10 @@ from typing import Iterable
 
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 
+from src.analisar_fatores_associados import analisar_fator
 from src.recorte_temporal import ano_atual, texto_anos_parciais
 
 
@@ -39,6 +41,9 @@ OCORRENCIAS_COLUNAS = [
     "municipio",
     "causa_acidente",
     "tipo_acidente",
+    "tipo_pista",
+    "tracado_via",
+    "uso_solo",
     "classificacao_acidente",
     "fase_dia",
     "condicao_metereologica",
@@ -142,9 +147,27 @@ ROTULOS_FILTROS_MAPA = {
     "br": "BR",
     "causa_acidente": "Causa",
     "tipo_acidente": "Tipo de acidente",
+    "tipo_pista": "Tipo de pista",
+    "tracado_via": "Traçado da via",
+    "uso_solo": "Uso do solo",
     "fase_dia": "Fase do dia",
     "condicao_metereologica": "Condição meteorológica",
     "faixa_horario": "Faixa horária",
+}
+
+FATORES_ASSOCIADOS = {
+    "Causa do acidente": "causa_acidente",
+    "Tipo de acidente": "tipo_acidente",
+    "Tipo de pista": "tipo_pista",
+    "Traçado da via": "tracado_via",
+    "Uso do solo": "uso_solo",
+    "Fase do dia": "fase_dia",
+    "Condição meteorológica": "condicao_metereologica",
+    "Dia da semana": "dia_semana",
+    "Faixa horária": "faixa_horario",
+    "BR": "br",
+    "UF": "uf",
+    "Município": "municipio",
 }
 
 
@@ -1113,6 +1136,274 @@ def render_visao_geografica(df: pd.DataFrame, filtros: dict[str, list] | None = 
         )
 
 
+def render_fatores_associados(df: pd.DataFrame, filtros: dict[str, list]) -> None:
+    st.subheader("Fatores Associados")
+    st.write("**Pergunta central:** Quais fatores estão associados aos acidentes fatais?")
+    st.caption(
+        "A análise compara acidentes fatais e não fatais para identificar categorias com maior percentual de "
+        "fatalidade. Os resultados representam associações no recorte analisado e não comprovam causalidade."
+    )
+
+    fatores_disponiveis = {rotulo: coluna for rotulo, coluna in FATORES_ASSOCIADOS.items() if coluna in df.columns}
+    if not fatores_disponiveis:
+        st.info("Nenhuma coluna de fator está disponível no recorte carregado.")
+        return
+
+    col_fator, col_minimo = st.columns([1.5, 1])
+    with col_fator:
+        rotulo_fator = st.selectbox("Fator analisado", list(fatores_disponiveis), key="fator_associado")
+    with col_minimo:
+        minimo = st.selectbox(
+            "Mínimo de acidentes por categoria",
+            [10, 25, 50, 100, 250, 500],
+            index=2,
+            key="minimo_fatores_associados",
+        )
+    st.warning(
+        "Categorias com poucas ocorrências podem apresentar percentuais elevados e instáveis. "
+        "O limite mínimo ajuda a tornar a comparação mais confiável."
+    )
+    with st.expander("Filtros aplicados à análise", expanded=False):
+        for coluna, rotulo in ROTULOS_FILTROS_MAPA.items():
+            st.write(f"**{rotulo}:** {resumo_valores_filtro(coluna, filtros.get(coluna, []))}")
+
+    coluna = fatores_disponiveis[rotulo_fator]
+    analise = analisar_fator(df, coluna, minimo_ocorrencias=minimo)
+    if analise.empty:
+        st.info("Não há categorias com ocorrências suficientes para o mínimo selecionado.")
+        return
+
+    lider_percentual = analise.iloc[0]
+    lider_volume = analise.sort_values(["acidentes_fatais", "categoria"], ascending=[False, True]).iloc[0]
+    if lider_percentual["categoria"] == lider_volume["categoria"]:
+        st.info(
+            f"No recorte filtrado, **{lider_percentual['categoria']}** apresenta o maior percentual de fatalidade "
+            f"({formatar_percentual(lider_percentual['percentual_fatalidade'])}) e também concentra o maior número "
+            f"absoluto de acidentes fatais entre as categorias com pelo menos {formatar_numero(minimo)} acidentes. "
+            "Esse resultado representa uma associação nos registros analisados e não comprova causalidade."
+        )
+    else:
+        st.info(
+            f"No recorte filtrado, **{lider_percentual['categoria']}** apresenta o maior percentual de fatalidade "
+            f"({formatar_percentual(lider_percentual['percentual_fatalidade'])}) entre as categorias com pelo menos "
+            f"{formatar_numero(minimo)} acidentes, enquanto **{lider_volume['categoria']}** concentra o maior número "
+            "absoluto de acidentes fatais. Esse resultado representa uma associação nos registros analisados e não "
+            "comprova causalidade."
+        )
+
+    top = analise.head(15).sort_values("percentual_fatalidade", ascending=True)
+    fig_percentual = px.bar(
+        top,
+        x="percentual_fatalidade",
+        y="categoria",
+        orientation="h",
+        text="percentual_fatalidade",
+        custom_data=["total_acidentes", "acidentes_fatais", "acidentes_nao_fatais", "mortos", "feridos_graves"],
+        labels={"percentual_fatalidade": "% de fatalidade", "categoria": rotulo_fator},
+        color_discrete_sequence=[CORES["vermelho"]],
+    )
+    fig_percentual.update_traces(
+        texttemplate="%{text:.1f}%",
+        textposition="outside",
+        cliponaxis=False,
+        hovertemplate=(
+            "<b>%{y}</b><br>Total de acidentes: %{customdata[0]:,.0f}<br>Acidentes fatais: %{customdata[1]:,.0f}"
+            "<br>Acidentes não fatais: %{customdata[2]:,.0f}<br>Percentual de fatalidade: %{x:.1f}%"
+            "<br>Mortos: %{customdata[3]:,.0f}<br>Feridos graves: %{customdata[4]:,.0f}<extra></extra>"
+        ),
+    )
+    aplicar_layout_grafico(fig_percentual, "Percentual de fatalidade por categoria")
+    fig_percentual.update_layout(height=max(420, len(top) * 38), margin=dict(l=18, r=95, t=58, b=18))
+    fig_percentual.update_xaxes(ticksuffix="%")
+    st.plotly_chart(fig_percentual, width="stretch", key="fatores_percentual_fatalidade")
+    st.caption("Leitura: 19,1% dos acidentes desta categoria tiveram pelo menos uma morte.")
+
+    st.markdown("#### Volume absoluto versus proporção")
+    st.caption(
+        "Os rankings permitem comparar volume absoluto e proporção. A categoria com mais acidentes fatais não "
+        "necessariamente apresenta o maior percentual de fatalidade."
+    )
+    ranking_fatais = analise.nlargest(10, ["acidentes_fatais", "total_acidentes"]).sort_values(
+        "acidentes_fatais", ascending=True
+    )
+    ranking_percentual = analise.nlargest(10, ["percentual_fatalidade", "total_acidentes"]).sort_values(
+        "percentual_fatalidade", ascending=True
+    )
+    col_ranking_fatais, col_ranking_percentual = st.columns(2)
+    with col_ranking_fatais:
+        fig_ranking_fatais = px.bar(
+            ranking_fatais,
+            x="acidentes_fatais",
+            y="categoria",
+            orientation="h",
+            text="acidentes_fatais",
+            custom_data=["total_acidentes", "percentual_fatalidade", "mortos", "feridos_graves"],
+            labels={"acidentes_fatais": "Acidentes fatais", "categoria": rotulo_fator},
+            color_discrete_sequence=[CORES["amarelo"]],
+        )
+        fig_ranking_fatais.update_traces(
+            texttemplate="%{text:,.0f}",
+            textposition="outside",
+            cliponaxis=False,
+            hovertemplate=(
+                "<b>%{y}</b><br>Acidentes fatais: %{x:,.0f}<br>Total de acidentes: %{customdata[0]:,.0f}"
+                "<br>Percentual de fatalidade: %{customdata[1]:.1f}%<br>Mortos: %{customdata[2]:,.0f}"
+                "<br>Feridos graves: %{customdata[3]:,.0f}<extra></extra>"
+            ),
+        )
+        aplicar_layout_grafico(fig_ranking_fatais, "Top 10 categorias por acidentes fatais")
+        fig_ranking_fatais.update_layout(height=500, margin=dict(l=190, r=80, t=58, b=18))
+        st.plotly_chart(fig_ranking_fatais, width="stretch", key="fatores_ranking_acidentes_fatais")
+
+    with col_ranking_percentual:
+        fig_ranking_percentual = px.bar(
+            ranking_percentual,
+            x="percentual_fatalidade",
+            y="categoria",
+            orientation="h",
+            text="percentual_fatalidade",
+            custom_data=["total_acidentes", "acidentes_fatais", "mortos", "feridos_graves"],
+            labels={"percentual_fatalidade": "% de fatalidade", "categoria": rotulo_fator},
+            color_discrete_sequence=[CORES["vermelho"]],
+        )
+        fig_ranking_percentual.update_traces(
+            texttemplate="%{text:.1f}%",
+            textposition="outside",
+            cliponaxis=False,
+            hovertemplate=(
+                "<b>%{y}</b><br>Percentual de fatalidade: %{x:.1f}%<br>Total de acidentes: %{customdata[0]:,.0f}"
+                "<br>Acidentes fatais: %{customdata[1]:,.0f}<br>Mortos: %{customdata[2]:,.0f}"
+                "<br>Feridos graves: %{customdata[3]:,.0f}<extra></extra>"
+            ),
+        )
+        aplicar_layout_grafico(fig_ranking_percentual, "Top 10 categorias por percentual de fatalidade")
+        fig_ranking_percentual.update_layout(height=500, margin=dict(l=190, r=80, t=58, b=18))
+        fig_ranking_percentual.update_xaxes(ticksuffix="%")
+        st.plotly_chart(fig_ranking_percentual, width="stretch", key="fatores_ranking_percentual_fatalidade")
+
+    with st.expander("Análise avançada: volume versus proporção", expanded=False):
+        st.caption(
+            "As colunas representam o número absoluto de acidentes fatais, enquanto a linha mostra o percentual "
+            "de fatalidade. Uma categoria pode liderar em volume sem apresentar a maior proporção."
+        )
+        criterio_rotulo = st.selectbox(
+            "Ordenar comparação por",
+            ["Acidentes fatais", "Percentual de fatalidade", "Total de acidentes"],
+            key="ordenacao_comparacao_fatores",
+        )
+        criterio_coluna = {
+            "Acidentes fatais": "acidentes_fatais",
+            "Percentual de fatalidade": "percentual_fatalidade",
+            "Total de acidentes": "total_acidentes",
+        }[criterio_rotulo]
+        comparacao = (
+            analise.sort_values([criterio_coluna, "categoria"], ascending=[False, True])
+            .head(10)
+            .reset_index(drop=True)
+        )
+
+        def rotulo_categoria_eixo(valor: object, limite_linha: int = 26) -> str:
+            texto = str(valor)
+            if len(texto) <= limite_linha:
+                return texto
+            palavras = texto.split()
+            primeira_linha: list[str] = []
+            while palavras and len(" ".join(primeira_linha + [palavras[0]])) <= limite_linha:
+                primeira_linha.append(palavras.pop(0))
+            if not primeira_linha:
+                return f"{texto[: limite_linha - 1]}…"
+            segunda_linha = " ".join(palavras)
+            if len(segunda_linha) > limite_linha:
+                segunda_linha = f"{segunda_linha[: limite_linha - 1]}…"
+            return f"{' '.join(primeira_linha)}<br>{segunda_linha}"
+
+        comparacao["categoria_eixo"] = comparacao["categoria"].map(rotulo_categoria_eixo)
+        dados_tooltip = comparacao[
+            [
+                "categoria",
+                "total_acidentes",
+                "acidentes_fatais",
+                "acidentes_nao_fatais",
+                "percentual_fatalidade",
+                "mortos",
+                "feridos_graves",
+            ]
+        ].to_numpy()
+        tooltip_completo = (
+            "<b>%{customdata[0]}</b><br>Total de acidentes: %{customdata[1]:,.0f}"
+            "<br>Acidentes fatais: %{customdata[2]:,.0f}<br>Acidentes não fatais: %{customdata[3]:,.0f}"
+            "<br>Percentual de fatalidade: %{customdata[4]:.1f}%<br>Mortos: %{customdata[5]:,.0f}"
+            "<br>Feridos graves: %{customdata[6]:,.0f}<extra></extra>"
+        )
+
+        fig_comparacao = go.Figure()
+        fig_comparacao.add_trace(
+            go.Bar(
+                name="Acidentes fatais",
+                x=comparacao["categoria_eixo"],
+                y=comparacao["acidentes_fatais"],
+                customdata=dados_tooltip,
+                marker_color=CORES["amarelo"],
+                text=comparacao["acidentes_fatais"],
+                texttemplate="%{text:,.0f}",
+                textposition="outside",
+                cliponaxis=False,
+                hovertemplate=tooltip_completo,
+            )
+        )
+        fig_comparacao.add_trace(
+            go.Scatter(
+                name="% de fatalidade",
+                x=comparacao["categoria_eixo"],
+                y=comparacao["percentual_fatalidade"],
+                customdata=dados_tooltip,
+                mode="lines+markers",
+                yaxis="y2",
+                line=dict(color=CORES["vermelho"], width=3),
+                marker=dict(color=CORES["vermelho"], size=9, line=dict(color="#f8fafc", width=1)),
+                hovertemplate=tooltip_completo,
+            )
+        )
+        aplicar_layout_grafico(fig_comparacao, "Comparação entre volume e percentual de fatalidade")
+        limite_percentual = max(1.0, float(comparacao["percentual_fatalidade"].max()) * 1.18)
+        fig_comparacao.update_layout(
+            height=590,
+            margin=dict(l=55, r=75, t=75, b=175),
+            bargap=0.28,
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+            yaxis=dict(title="Acidentes fatais", tickformat=",d", rangemode="tozero"),
+            yaxis2=dict(
+                title="% de fatalidade",
+                overlaying="y",
+                side="right",
+                tickformat=".1f",
+                ticksuffix="%",
+                range=[0, limite_percentual],
+                showgrid=False,
+                tickfont=dict(color="#cbd5e1"),
+                title_font=dict(color="#cbd5e1"),
+            ),
+        )
+        fig_comparacao.update_xaxes(tickangle=-35, automargin=True)
+        st.plotly_chart(fig_comparacao, width="stretch", key="fatores_comparacao_volume_percentual")
+
+    st.markdown("#### Tabela detalhada")
+    st.dataframe(
+        analise,
+        width="stretch",
+        hide_index=True,
+        column_config={
+            "categoria": st.column_config.TextColumn(rotulo_fator),
+            "total_acidentes": st.column_config.NumberColumn("Total de acidentes", format="%,d"),
+            "acidentes_fatais": st.column_config.NumberColumn("Acidentes fatais", format="%,d"),
+            "acidentes_nao_fatais": st.column_config.NumberColumn("Acidentes não fatais", format="%,d"),
+            "percentual_fatalidade": st.column_config.NumberColumn("% de fatalidade", format="%.1f%%"),
+            "mortos": st.column_config.NumberColumn("Mortos", format="%,d"),
+            "feridos_graves": st.column_config.NumberColumn("Feridos graves", format="%,d"),
+        },
+    )
+
+
 def render_perfil_acidentes(df: pd.DataFrame) -> None:
     secao("Perfil dos Acidentes", "Principais características dos acidentes registrados pela PRF.")
     col1, col2 = st.columns([1, 1])
@@ -1307,10 +1598,11 @@ def main() -> None:
 
     criar_cards(filtrado)
 
-    aba_geral, aba_geo, aba_perfil, aba_gravidade, aba_locais, aba_indice = st.tabs(
+    aba_geral, aba_geo, aba_fatores, aba_perfil, aba_gravidade, aba_locais, aba_indice = st.tabs(
         [
             "Visão Geral",
             "Visão Geográfica",
+            "Fatores Associados",
             "Perfil dos Acidentes",
             "Gravidade",
             "Rodovias e Locais Críticos",
@@ -1322,6 +1614,8 @@ def main() -> None:
         render_visao_geral(filtrado)
     with aba_geo:
         render_visao_geografica(filtrado, filtros)
+    with aba_fatores:
+        render_fatores_associados(filtrado, filtros)
     with aba_perfil:
         render_perfil_acidentes(filtrado)
     with aba_gravidade:

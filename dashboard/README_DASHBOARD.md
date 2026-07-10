@@ -57,6 +57,8 @@ Todos os filtros começam vazios. Filtro vazio significa que todos os valores s�
 
 ## Abas do dashboard
 
+O dashboard possui sete abas, nesta ordem: **Visão Geral**, **Visão Geográfica**, **Fatores Associados**, **Perfil dos Acidentes**, **Gravidade**, **Rodovias e Locais Críticos** e **Índice de Risco**. A aba Fatores Associados compara acidentes fatais e não fatais por categoria, com mínimo de ocorrências, percentual de fatalidade, dispersão e tabela detalhada. Os resultados são associações descritivas, não prova de causalidade.
+
 1. **Visão Geral:** cards executivos, acidentes por ano, UF, mês, dia da semana e resumo anual.
 2. **Perfil dos Acidentes:** causas, tipos de acidente, fase do dia e condição meteorológica.
 3. **Gravidade:** percentual de acidentes fatais por UF, mortos por UF, acidentes graves por causa e comparação entre volume e gravidade.

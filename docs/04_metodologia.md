@@ -2,6 +2,10 @@
 
 O projeto foi organizado em camadas para separar dados originais, dados tratados e dados modelados.
 
+## CRISP-DM adaptado para Data Analytics
+
+A metodologia principal do projeto é o **CRISP-DM, adaptado para um projeto de Data Analytics**. A compreensão do negócio define a pergunta sobre acidentes fatais; a compreensão dos dados examina as bases públicas da PRF; a preparação realiza limpeza, padronização e criação de `acidente_fatal`; a modelagem analítica produz agregações, indicadores e comparações proporcionais; a avaliação combina testes, auditoria, validação da variável-alvo e limitações; e a comunicação ocorre por dashboard, relatório, README e apresentação.
+
 ## 1. Coleta dos dados
 
 Os arquivos CSV públicos da PRF foram localizados no projeto. Os arquivos de ocorrência e pessoa/envolvido foram identificados por nome, tamanho e colunas.
@@ -43,3 +47,7 @@ O índice de risco é uma métrica educacional simples, criada para comparar gru
 ## 10. Conclusões
 
 As conclusões são baseadas nos dados processados e deixam claro que o ano corrente é parcial quando estiver presente no recorte e que a análise mostra padrões, não causalidade absoluta.
+
+## Nota para modelagem preditiva futura
+
+Não há Machine Learning nesta etapa. A coluna `mortos` é utilizada para criar `acidente_fatal` e, por isso, não pode ser usada como variável de entrada em um modelo que tente classificar `acidente_fatal`. Também não devem ser usados como preditores diretos `mortos`, `feridos_graves`, `feridos_leves`, `total_vitimas`, `acidente_grave`, `indice_risco` e `acidente_fatal`. Causa do acidente e tipo de acidente são úteis para análise descritiva, mas podem ser informações registradas somente após a ocorrência; isso deve ser considerado em um futuro modelo preditivo.

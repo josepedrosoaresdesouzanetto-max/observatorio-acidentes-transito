@@ -24,6 +24,12 @@ O eixo analítico central do projeto é a variável-alvo `acidente_fatal`. Ela �
 
 O projeto foi desenvolvido como entrega acadêmica e também como material de portfólio júnior em análise de dados.
 
+## Metodologia CRISP-DM
+
+A metodologia principal do projeto é o **CRISP-DM, adaptado para um projeto de Data Analytics**. A compreensão do negócio define a pergunta sobre acidentes fatais; a compreensão dos dados examina as bases públicas da PRF; a preparação cobre limpeza, padronização e criação de `acidente_fatal`; a modelagem analítica usa agregações, indicadores e comparações proporcionais; a avaliação inclui testes, auditoria, validação da variável-alvo e limitações; e a comunicação ocorre pelo dashboard, relatório, README e apresentação.
+
+Não há Machine Learning nesta etapa. Em uma futura modelagem preditiva, `mortos` não pode ser usado como entrada, pois cria `acidente_fatal`. Também não devem ser preditores diretos `feridos_graves`, `feridos_leves`, `total_vitimas`, `acidente_grave`, `indice_risco` ou `acidente_fatal`. Causa e tipo de acidente são úteis na análise descritiva, mas podem ser registrados somente após a ocorrência e exigem cuidado em um modelo futuro.
+
 ## Tecnologias usadas
 
 - **Python** para tratamento, modelagem e geração de artefatos.
@@ -74,6 +80,8 @@ No Windows, também é possível abrir o dashboard com dois cliques no arquivo:
 ```text
 ABRIR_DASHBOARD.bat
 ```
+
+O dashboard possui sete abas: Visão Geral, Visão Geográfica, Fatores Associados, Perfil dos Acidentes, Gravidade, Rodovias e Locais Críticos e Índice de Risco. A aba **Fatores Associados** compara acidentes fatais e não fatais por categoria, sempre como associação descritiva e não como prova de causalidade.
 
 ## Principais insights
 

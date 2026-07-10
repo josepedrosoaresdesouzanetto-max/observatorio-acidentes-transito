@@ -2,6 +2,10 @@
 
 ## Roteiro de apresentação
 
+A metodologia principal do projeto é o **CRISP-DM, adaptado para um projeto de Data Analytics**: compreensão do negócio pela pergunta sobre acidentes fatais, compreensão das bases públicas da PRF, preparação com limpeza e criação de `acidente_fatal`, modelagem analítica com agregações e comparações proporcionais, avaliação por testes e auditoria, e comunicação por dashboard, relatório, README e apresentação.
+
+Não há Machine Learning nesta etapa. Em uma modelagem futura, `mortos` não pode ser entrada pois cria `acidente_fatal`; também não devem ser preditores diretos `feridos_graves`, `feridos_leves`, `total_vitimas`, `acidente_grave`, `indice_risco` e `acidente_fatal`. Causa e tipo de acidente são úteis descritivamente, mas podem ser registrados após a ocorrência.
+
 Bom dia, pessoal. Meu projeto se chama **Observatório de Acidentes de Trânsito no Brasil**.
 
 A ideia dele foi pegar dados públicos da Polícia Rodoviária Federal, organizar esses dados e transformar tudo em uma análise mais fácil de entender. Em vez de olhar só para uma planilha grande, cheia de colunas e milhares de linhas, eu quis construir um projeto que mostrasse padrões: onde acontecem mais acidentes, quais causas aparecem mais, quais rodovias se destacam e onde os casos parecem mais graves.
@@ -24,7 +28,7 @@ Uma parte importante do projeto foi o **índice de risco**. Ele não é uma prev
 
 Com isso, dá para perceber uma coisa importante: nem sempre o local com mais acidentes é o local mais crítico quando olhamos gravidade. Às vezes um trecho ou uma causa pode ter menos registros, mas apresentar mais mortes ou feridos graves. Então o índice ajuda a olhar além da quantidade bruta.
 
-Nesse ponto eu também criei um dashboard em Streamlit. A ideia do dashboard é permitir que a análise seja explorada de forma interativa. Ele tem filtros por ano, UF, BR, causa, tipo de acidente, fase do dia, condição meteorológica e faixa de horário.
+Nesse ponto eu também criei um dashboard em Streamlit. A ideia do dashboard é permitir que a análise seja explorada de forma interativa. Ele tem filtros por ano, UF, BR, causa, tipo de acidente, fase do dia, condição meteorológica e faixa de horário. As sete abas são visão geral, visão geográfica, fatores associados, perfil dos acidentes, gravidade, rodovias e locais críticos e índice de risco. Em Fatores Associados, a leitura compara acidentes fatais e não fatais por categoria e não comprova causalidade.
 
 Na primeira parte do dashboard aparecem cards com indicadores gerais, como total de acidentes, acidentes fatais, mortos, percentual de fatalidade, feridos graves, feridos leves, vítimas, acidentes graves e percentual de acidentes graves. Depois, nas abas, dá para navegar por visão geral, perfil dos acidentes, gravidade, rodovias e locais críticos, e índice de risco.
 

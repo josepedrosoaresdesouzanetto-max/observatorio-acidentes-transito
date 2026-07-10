@@ -12,6 +12,12 @@ Identificar padrões associados a acidentes fatais por tempo, local, rodovia, ca
 
 A variável-alvo do projeto é `acidente_fatal`, criada a partir do campo original `mortos`: quando `mortos >= 1`, `acidente_fatal = 1`; quando `mortos = 0`, `acidente_fatal = 0`. Quando `acidente_fatal = 1`, isso significa que houve pelo menos uma morte registrada na ocorrência, não que morreu exatamente uma pessoa.
 
+### Metodologia CRISP-DM
+
+A metodologia principal do projeto é o **CRISP-DM, adaptado para um projeto de Data Analytics**: compreensão do negócio pela pergunta sobre acidentes fatais; compreensão dos dados pelas bases públicas da PRF; preparação com limpeza, padronização e `acidente_fatal`; modelagem analítica com agregações, indicadores e comparações proporcionais; avaliação com testes, auditoria, validação e limitações; e comunicação pelo dashboard, relatório, README e apresentação.
+
+Não há Machine Learning nesta etapa. Em modelo futuro, `mortos`, `feridos_graves`, `feridos_leves`, `total_vitimas`, `acidente_grave`, `indice_risco` e `acidente_fatal` não devem ser preditores diretos. `mortos` cria a variável-alvo; causa e tipo de acidente podem ser registrados apenas após a ocorrência.
+
 ## 3. Fonte dos dados
 
 Os dados são públicos e vieram da PRF. O projeto usa arquivos de ocorrência (`datatran`) e arquivos de pessoa/envolvido (`acidentes`).
