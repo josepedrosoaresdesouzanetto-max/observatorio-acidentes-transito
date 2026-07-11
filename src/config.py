@@ -12,6 +12,10 @@ RELATORIOS_DIR = PROJECT_ROOT / "relatorios"
 GRAFICOS_DIR = RELATORIOS_DIR / "graficos"
 TABELAS_DIR = RELATORIOS_DIR / "tabelas"
 LOGS_DIR = PROJECT_ROOT / "logs"
+TEMPORARIOS_PRF_DIR = DADOS_DIR / "temporarios" / "prf"
+BACKUPS_PRF_DIR = DADOS_DIR / "backups"
+MANIFESTO_REMOTO_PRF_PATH = LOGS_DIR / "manifesto_dados_remotos.json"
+RELATORIO_SINCRONIZACAO_PRF_PATH = LOGS_DIR / "relatorio_sincronizacao_prf.md"
 
 ENCODINGS = ("utf-8-sig", "latin1", "cp1252")
 SEPARADOR_PADRAO = ";"
