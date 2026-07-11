@@ -27,6 +27,7 @@ from src.config import (
     URL_DADOS_ABERTOS_PRF,
 )
 from src.recorte_temporal import anos_parciais
+from src.sincronizar_dados_prf import resumir_status_manifesto
 from src.utils import ler_csv_prf, normalizar_nome_coluna
 
 
@@ -242,6 +243,14 @@ def verificar_fonte_publica_online() -> list[ResultadoVerificacao]:
         resultados.append(ok("Pessoas publicas novas", "Arquivos locais de pessoa cobrem os anos publicados dentro do recorte."))
 
     return resultados
+
+
+def verificar_status_sincronizacao() -> list[ResultadoVerificacao]:
+    status = resumir_status_manifesto()
+    detalhe = f"Status da sincronização controlada: {status}. Nenhuma atualização é aplicada pelo agendamento."
+    if status in {"sem mudança detectada", "comparação concluída"}:
+        return [ok("Sincronização controlada", detalhe)]
+    return [aviso("Sincronização controlada", detalhe)]
 
 
 def verificar_documentacao_fonte() -> list[ResultadoVerificacao]:
@@ -506,6 +515,7 @@ def verificar_dados_publicos() -> list[ResultadoVerificacao]:
     resultados: list[ResultadoVerificacao] = []
     resultados.extend(verificar_documentacao_fonte())
     resultados.extend(verificar_fonte_publica_online())
+    resultados.extend(verificar_status_sincronizacao())
     resultados.extend(verificar_arquivos_brutos())
     resultados.extend(verificar_layout_brutos())
     resultados.extend(verificar_manifesto_e_qualidade())

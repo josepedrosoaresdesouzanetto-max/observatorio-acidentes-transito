@@ -167,6 +167,18 @@ powershell -ExecutionPolicy Bypass -File scripts\instalar_agendamento_verificaca
 
 Por padrão, o agendamento fica semanal, segunda-feira às 09:00. Os relatórios e logs ficam em `logs/`, pasta ignorada pelo Git.
 
+### Sincronização controlada da PRF
+
+O monitoramento pode registrar metadados remotos, baixar um CSV para `dados/temporarios/prf/`, detectar encoding e separador e comparar registros com a base bruta local. **O projeto monitora, baixa, valida e compara automaticamente, mas não substitui a base oficial sem confirmação explícita.**
+
+```powershell
+.\.venv\Scripts\python.exe -m src.sincronizar_dados_prf --verificar
+.\.venv\Scripts\python.exe -m src.sincronizar_dados_prf --baixar-temporario --ano 2025 --tipo ocorrencias
+.\.venv\Scripts\python.exe -m src.sincronizar_dados_prf --comparar --ano 2025 --tipo ocorrencias
+```
+
+A aplicação é uma operação manual separada, exige `--aplicar-atualizacao` junto de `--confirmar`, cria backup e executa rollback em caso de falha. O agendamento semanal continua apenas verificando e relatando. Consulte `docs/09_sincronizacao_dados_prf.md` para arquitetura, segurança, relatórios e limitações.
+
 ## Auditoria e qualidade dos dados
 
 Para fortalecer a rastreabilidade, o projeto também gera um manifesto técnico dos CSVs brutos com tipo, ano, tamanho, data de modificação e hash SHA-256:

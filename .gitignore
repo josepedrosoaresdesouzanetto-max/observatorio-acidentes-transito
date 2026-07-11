@@ -7,6 +7,8 @@ __pycache__/
 .pytest_cache/
 .ipynb_checkpoints/
 /logs/
+/dados/temporarios/
+/dados/backups/
 
 # Arquivos locais/sensíveis
 .env
