@@ -6,6 +6,7 @@ Case de análise dos acidentes registrados pela Polícia Rodoviária Federal, co
 ![Pandas](https://img.shields.io/badge/Pandas-análise-150458?style=flat-square&logo=pandas&logoColor=white)
 ![SQL](https://img.shields.io/badge/SQL-modelagem-336791?style=flat-square&logo=postgresql&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-dashboard-FF4B4B?style=flat-square&logo=streamlit&logoColor=white)
+[![Tests](https://github.com/josepedrosoaresdesouzanetto-max/observatorio-acidentes-transito/actions/workflows/tests.yml/badge.svg)](https://github.com/josepedrosoaresdesouzanetto-max/observatorio-acidentes-transito/actions/workflows/tests.yml)
 
 ## Visão geral
 
