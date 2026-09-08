@@ -1,3 +1,4 @@
+import pytest
 import pandas as pd
 
 from src.config import TRATADOS_DIR
@@ -5,6 +6,11 @@ from src.limpar_dados import limpar_dataframe
 from src.utils import ler_csv_prf
 
 
+@pytest.mark.dados_locais
+@pytest.mark.skipif(
+    not (TRATADOS_DIR / "ocorrencias_tratadas.csv").exists(),
+    reason="Arquivo tratado ausente; execute python -m src.limpar_dados.",
+)
 def test_colunas_essenciais_tratadas():
     path = TRATADOS_DIR / "ocorrencias_tratadas.csv"
     assert path.exists(), "Rode python -m src.limpar_dados antes dos testes."

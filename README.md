@@ -1,133 +1,176 @@
 # Observatório de Acidentes de Trânsito no Brasil
 
-Análise de dados públicos da PRF sobre acidentes em rodovias federais brasileiras, com pipeline em Python, consultas SQL, relatório técnico e dashboard interativo em Streamlit.
+Case de análise dos acidentes registrados pela Polícia Rodoviária Federal, com pipeline em Python, tratamento em Pandas, consultas SQL, testes de qualidade, relatório técnico e dashboard interativo em Streamlit.
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat&logo=python&logoColor=white)
-![Streamlit](https://img.shields.io/badge/Streamlit-dashboard-FF4B4B?style=flat&logo=streamlit&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-green?style=flat)
-![Status](https://img.shields.io/badge/status-projeto%20acad%C3%AAmico-blue?style=flat)
+![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)
+![Pandas](https://img.shields.io/badge/Pandas-análise-150458?style=flat-square&logo=pandas&logoColor=white)
+![SQL](https://img.shields.io/badge/SQL-modelagem-336791?style=flat-square&logo=postgresql&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-dashboard-FF4B4B?style=flat-square&logo=streamlit&logoColor=white)
 
-## Sobre o projeto
+## Visão geral
 
-Este projeto organiza, trata e analisa dados públicos da **Polícia Rodoviária Federal (PRF)** para observar padrões de acidentes em rodovias federais brasileiras.
+O projeto transforma arquivos públicos da PRF em uma base analítica organizada por camadas. O fluxo padroniza os dados, cria variáveis temporais e de gravidade, executa verificações de qualidade e produz tabelas, gráficos, relatório e dashboard.
 
-A proposta é transformar bases grandes em uma análise reproduzível, com foco em perguntas como:
+A pergunta central é: **quais fatores aparecem associados à ocorrência de acidentes fatais nas rodovias federais brasileiras?**
 
-- quais fatores estão associados a acidentes fatais;
-- quais UFs concentram mais acidentes;
-- quais causas aparecem com mais frequência;
-- quais BRs se destacam nos rankings;
-- em quais períodos os acidentes ocorrem mais;
-- onde há maior combinação entre volume e gravidade.
+Para responder com cuidado, o projeto separa volume absoluto de fatalidade relativa e usa a variável `acidente_fatal`, derivada de `mortos`: uma ocorrência é classificada como fatal quando possui ao menos uma morte registrada.
 
-O eixo analítico central do projeto é a variável-alvo `acidente_fatal`. Ela é criada a partir do campo original `mortos`: `acidente_fatal = 1` quando `mortos >= 1` e `acidente_fatal = 0` quando `mortos = 0`. Assim, o projeto diferencia o campo original, a regra de transformação e a variável usada para comparar acidentes fatais e não fatais. Quando `acidente_fatal = 1`, isso significa que houve pelo menos uma morte registrada na ocorrência, não que morreu exatamente uma pessoa.
+Este trabalho nasceu como entrega acadêmica e foi estruturado como case de portfólio, com código, documentação, testes e limitações explícitas.
 
-O projeto foi desenvolvido como entrega acadêmica e também como material de portfólio júnior em análise de dados.
+## Problema e objetivos
 
-## Tecnologias usadas
+Contar acidentes não é suficiente para analisar gravidade. UFs e rodovias com mais registros podem não ser as mesmas com maior proporção de ocorrências fatais.
 
-- **Python** para tratamento, modelagem e geração de artefatos.
-- **Pandas** para leitura, limpeza e agregações.
-- **Matplotlib** para gráficos estáticos do relatório.
-- **Streamlit** para o dashboard interativo.
-- **Plotly** para gráficos interativos no dashboard.
-- **SQL** para consultas, modelagem e testes de qualidade.
-- **Pytest** para testes básicos do pipeline.
-- **Jupyter Notebook** para roteiros de exploração e documentação analítica.
+Os objetivos da análise são:
 
-## O que este projeto entrega
+- comparar volume de acidentes, vítimas e percentual de fatalidade;
+- observar padrões por UF, BR, município, período, causa registrada e condições da ocorrência;
+- criar uma métrica educacional de risco que combine frequência e severidade;
+- manter rastreabilidade entre dados brutos, tratados, modelados e artefatos finais;
+- apresentar os resultados em formatos adequados para exploração e comunicação.
 
-- Limpeza e padronização dos dados da PRF.
-- Separação dos dados em camadas bruta, tratada e modelada.
-- Criação de colunas derivadas para análise temporal, geográfica e de gravidade.
-- Criação da variável-alvo `acidente_fatal` a partir de `mortos`.
-- Modelagem analítica com dimensões, fatos e índices de risco.
-- Consultas SQL organizadas por carga, tratamento, modelagem, views e testes.
-- Dashboard interativo com filtros, cards, rankings e gráficos.
-- Relatório final em Markdown com gráficos e tabelas.
-- Testes básicos com `pytest`.
-- Documentação técnica sobre fonte, metodologia, LGPD e limitações.
+## Fonte e recorte dos dados
 
-## Demonstração do dashboard
+Os arquivos são públicos e disponibilizados no portal de [Dados Abertos da PRF](https://www.gov.br/prf/pt-br/acesso-a-informacao/dados-abertos/dados-abertos-da-prf).
 
-O dashboard fica em `dashboard/app.py` e foi construído com Streamlit e Plotly.
+O projeto trabalha com:
 
-As imagens abaixo estão reservadas para prints do dashboard. Elas ainda não foram adicionadas ao repositório para evitar referências quebradas no README.
+- **ocorrências (`datatran`):** uma linha por acidente, com data, horário, local, causa registrada, tipo de acidente, condições e totais de vítimas;
+- **pessoas/envolvidos (`acidentes`):** registros dos envolvidos, utilizados como fonte complementar.
 
-<!--
-Adicionar prints futuramente:
+O relatório versionado utiliza **2024, 2025 e parte de 2026**, totalizando 175.459 ocorrências tratadas. Os arquivos de 2022 e 2023 foram mantidos no manifesto histórico, mas não entram no relatório principal atual.
 
-![Dashboard - visão geral](docs/imagens/dashboard_home.png)
-![Ranking de UFs](docs/imagens/ranking_ufs.png)
-![Índice de risco](docs/imagens/indice_risco.png)
--->
+> 2026 é um ano parcial no recorte versionado. Ele não deve ser comparado diretamente com anos completos sem essa ressalva.
 
-Para abrir o dashboard:
+Os CSVs brutos e processados não são enviados ao GitHub por causa do volume. O repositório mantém manifestos com nomes, anos, tamanhos e hashes SHA-256 dos arquivos usados para gerar os resultados.
+
+## Tecnologias
+
+- **Python 3.10+** para o pipeline e as rotinas de auditoria e sincronização.
+- **Pandas** para leitura, limpeza, transformação e agregações.
+- **SQL** para modelagem dimensional, views analíticas e testes de qualidade.
+- **Streamlit e Plotly** para o dashboard interativo.
+- **Matplotlib** para os gráficos do relatório.
+- **Pytest** para testes unitários e verificações dependentes dos dados locais.
+- **Jupyter Notebook** como roteiro complementar de exploração.
+
+## Metodologia
+
+1. **Ingestão:** localiza os CSVs por tipo e ano e trata separador e encoding.
+2. **Limpeza:** padroniza colunas, tipos, datas, horários, nulos e duplicidades.
+3. **Transformação:** cria atributos de tempo, gravidade, vítimas e fatalidade.
+4. **Modelagem:** gera dimensões, fatos e agregações para análise.
+5. **Qualidade:** verifica chaves, campos essenciais, valores inválidos e categorias raras.
+6. **Análise:** compara contagens absolutas, proporções e recortes contextuais.
+7. **Comunicação:** gera gráficos, relatório em Markdown e dashboard interativo.
+
+O detalhamento está em [Metodologia](docs/04_metodologia.md), [Tratamento dos Dados](docs/05_tratamento_dos_dados.md) e [Modelagem dos Dados](docs/06_modelagem_dos_dados.md).
+
+## Principais resultados
+
+Os resultados abaixo pertencem ao recorte versionado e podem mudar quando novos arquivos forem processados.
+
+| Indicador | Resultado |
+| --- | ---: |
+| Ocorrências tratadas | 175.459 |
+| Ocorrências em 2024 | 73.156 |
+| Ocorrências em 2025 | 72.529 |
+| Ocorrências parciais em 2026 | 29.774 |
+| UF com mais acidentes no recorte | MG — 22.622 |
+| UF com maior percentual de acidentes fatais | MA — 19,14% |
+
+Leituras principais:
+
+- Volume de acidentes e fatalidade relativa respondem a perguntas diferentes e precisam ser apresentados separadamente.
+- MG lidera em quantidade de acidentes no recorte, enquanto MA apresenta o maior percentual de ocorrências fatais.
+- PA e RR também aparecem com percentuais de fatalidade elevados no recorte, apesar de volumes menores que os estados líderes em contagem.
+- Causa registrada, tipo de acidente, fase do dia, clima e tipo de pista permitem identificar associações, mas não demonstram causalidade.
+- O índice de risco ajuda a ordenar frequência e severidade, porém é uma métrica educacional, não um indicador oficial ou preditivo.
+
+Consulte o [Relatório Final](relatorios/relatorio_final.md) para tabelas e interpretações completas.
+
+## Visualizações
+
+![Total de acidentes por ano](relatorios/graficos/acidentes_por_ano.png)
+
+*O valor de 2026 representa apenas o período disponível no conjunto processado.*
+
+Outros gráficos versionados cobrem UFs, horários, dias da semana, causas registradas, tipos de acidente, clima, gravidade, rodovias e índice de risco. Todos estão em [`relatorios/graficos/`](relatorios/graficos/).
+
+## Dashboard
+
+O dashboard em `dashboard/app.py` oferece:
+
+- filtros por ano, UF, BR e outras dimensões disponíveis;
+- indicadores de acidentes, vítimas e fatalidade;
+- comparações temporais e geográficas;
+- rankings e gráficos interativos;
+- mapa do Brasil com recurso geográfico local.
+
+Para executar:
 
 ```powershell
-pip install -r requirements.txt
 streamlit run dashboard/app.py
 ```
 
-No Windows, também é possível abrir o dashboard com dois cliques no arquivo:
-
-```text
-ABRIR_DASHBOARD.bat
-```
-
-## Principais insights
-
-O insight central do projeto é que **o volume de acidentes não responde sozinho ao problema analítico do curso**. Para investigar acidentes com vítimas fatais, a leitura mais adequada é comparar a **proporção de acidentes fatais** entre grupos, usando a variável-alvo `acidente_fatal`.
-
-A pergunta "o que causa acidente fatal?" é tratada com cuidado metodológico: este projeto identifica fatores **associados** à fatalidade, mas não prova causalidade direta. Para afirmar causa, seria necessário complementar a análise com dados de exposição ao risco, fluxo de veículos, infraestrutura, velocidade, fiscalização e outros fatores externos.
-
-Na base analisada, UFs e rodovias com muitos registros podem não ser exatamente as mesmas com maior fatalidade relativa. Por isso, o dashboard separa contagens absolutas, como total de acidentes e mortos, de métricas proporcionais, como o **percentual de fatalidade**.
-
-Um exemplo importante da análise é a diferença entre volume absoluto e proporção. Uma UF pode concentrar mais acidentes fatais em quantidade total por ter maior volume de registros, enquanto outra pode apresentar maior percentual de fatalidade por ter uma proporção maior de acidentes com pelo menos uma morte. Por isso, o projeto analisa tanto acidentes fatais quanto percentual de fatalidade.
-
-A resposta analítica do projeto é: acidentes fatais devem ser observados pela comparação entre ocorrências fatais e não fatais, cruzando `acidente_fatal` com UF, BR, causa, tipo de acidente, fase do dia, clima e tipo de pista. Esses cruzamentos indicam fatores **associados** à fatalidade, mas não provam causalidade.
-
-O índice de risco permanece como métrica educacional complementar, útil para combinar frequência e severidade. Ele não substitui a variável-alvo `acidente_fatal` nem deve ser apresentado como resposta principal do problema.
-
-Outro ponto importante é que **o ano corrente deve ser tratado como parcial quando estiver no recorte**. Em 2026, isso significa interpretar 2026 com cuidado; quando o projeto avançar para 2027, a mesma regra passa a valer para 2027.
-
-## Fonte dos dados
-
-Os dados vêm de arquivos públicos da PRF. O projeto usa dois tipos principais de base:
-
-- **Ocorrências:** arquivos `datatran`, com uma linha por acidente.
-- **Pessoas/envolvidos:** arquivos `acidentes`, com registros dos envolvidos nas ocorrências.
-
-A análise principal usa automaticamente os anos disponíveis em `dados/01_brutos/ocorrencia/` a partir de **2024**. No recorte local atual, isso cobre **2024, 2025 e 2026**. Os arquivos de 2022 e 2023 foram preservados como histórico bruto, mas não são o foco principal do relatório.
+No Windows, também é possível usar `ABRIR_DASHBOARD.bat`.
 
 ## Estrutura do projeto
 
 ```text
-dados/01_brutos/      CSVs originais padronizados
-dados/02_tratados/    CSVs limpos
-dados/03_modelados/   dimensões, fatos e índices de risco
-src/                  scripts Python
-sql/                  scripts SQL para PostgreSQL
-notebooks/            roteiros de análise em Jupyter
-relatorios/           relatório, gráficos e tabelas
-docs/                 documentação técnica
-docs/imagens/         espaço reservado para prints do dashboard
-dashboard/            dashboard interativo em Streamlit
-apresentacao/         roteiro para sala de aula
-testes/               testes com pytest
+observatorio-acidentes-transito/
+|-- dados/                 manifestos, dicionário e dados locais ignorados
+|-- dashboard/             aplicação Streamlit e recursos visuais
+|-- docs/                  fonte, método, modelagem, LGPD e limitações
+|-- notebooks/             roteiros complementares de exploração
+|-- relatorios/            relatório, gráficos e tabelas versionados
+|-- scripts/               automação de verificação no Windows
+|-- sql/                   setup, carga, tratamento, modelo, views e testes
+|-- src/                   pipeline e rotinas de qualidade
+|-- testes/                testes unitários e de integração
+|-- README.md
+|-- requirements.txt
+`-- pytest.ini
 ```
 
-## Como instalar dependências
+## Como reproduzir
+
+### 1. Instale o ambiente
 
 ```powershell
+git clone https://github.com/josepedrosoaresdesouzanetto-max/observatorio-acidentes-transito.git
+cd observatorio-acidentes-transito
 python -m venv .venv
 .venv\Scripts\activate
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
-## Como executar o pipeline
+### 2. Obtenha os dados
 
-Execute os comandos abaixo na raiz do projeto:
+Baixe os arquivos no portal da PRF e organize-os conforme [Fonte dos Dados](docs/02_fonte_dos_dados.md):
+
+```text
+dados/01_brutos/ocorrencia/acidentes_2025_ocorrencia.csv
+dados/01_brutos/pessoa/acidentes_2025_pessoa.csv
+```
+
+A rotina de sincronização também pode localizar, baixar para uma pasta temporária e comparar um arquivo sem substituir automaticamente a base oficial:
+
+```powershell
+python -m src.sincronizar_dados_prf --verificar
+python -m src.sincronizar_dados_prf --baixar-temporario --ano 2025 --tipo ocorrencias
+python -m src.sincronizar_dados_prf --comparar --ano 2025 --tipo ocorrencias
+```
+
+Consulte [Sincronização dos Dados](docs/09_sincronizacao_dados_prf.md) antes de aplicar qualquer atualização.
+
+### 3. Execute o pipeline
+
+```powershell
+python -m src.atualizar_projeto
+```
+
+Ou execute as etapas individualmente:
 
 ```powershell
 python -m src.limpar_dados
@@ -137,118 +180,52 @@ python -m src.gerar_graficos
 python -m src.gerar_relatorio
 ```
 
-Se os arquivos tratados e modelados ainda não existirem, rode primeiro:
+### 4. Rode os testes
 
 ```powershell
-python -m src.limpar_dados
-python -m src.modelar_dados
-python -m src.calcular_indice_risco
+python -m pytest -q
 ```
 
-Para atualizar tudo a partir dos CSVs brutos locais, use o orquestrador:
+Em um clone sem os CSVs da PRF, os testes de integração marcados como `dados_locais` são ignorados com uma explicação; os testes unitários continuam executando normalmente. Com os arquivos locais disponíveis, toda a suíte é avaliada.
 
-```powershell
-python -m src.atualizar_projeto
-```
+## Auditoria e atualização
 
-## Automação segura dos dados
-
-O projeto foi preparado para ser reciclável sem baixar nem sobrescrever dados brutos automaticamente. A rotina abaixo consulta a fonte pública da PRF, compara com os arquivos locais e grava um relatório de status:
-
-```powershell
-python -m src.verificar_dados_publicos --salvar-relatorio
-```
-
-Para rodar a checagem semanalmente no Windows, use:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\instalar_agendamento_verificacao.ps1
-```
-
-Por padrão, o agendamento fica semanal, segunda-feira às 09:00. Os relatórios e logs ficam em `logs/`, pasta ignorada pelo Git.
-
-### Sincronização controlada da PRF
-
-O monitoramento pode registrar metadados remotos, baixar um CSV para `dados/temporarios/prf/`, detectar encoding e separador e comparar registros com a base bruta local. **O projeto monitora, baixa, valida e compara automaticamente, mas não substitui a base oficial sem confirmação explícita.**
-
-```powershell
-.\.venv\Scripts\python.exe -m src.sincronizar_dados_prf --verificar
-.\.venv\Scripts\python.exe -m src.sincronizar_dados_prf --baixar-temporario --ano 2025 --tipo ocorrencias
-.\.venv\Scripts\python.exe -m src.sincronizar_dados_prf --comparar --ano 2025 --tipo ocorrencias
-```
-
-A aplicação é uma operação manual separada, exige `--aplicar-atualizacao` junto de `--confirmar`, cria backup e executa rollback em caso de falha. O agendamento semanal continua apenas verificando e relatando. Consulte `docs/09_sincronizacao_dados_prf.md` para arquitetura, segurança, relatórios e limitações.
-
-## Auditoria e qualidade dos dados
-
-Para fortalecer a rastreabilidade, o projeto também gera um manifesto técnico dos CSVs brutos com tipo, ano, tamanho, data de modificação e hash SHA-256:
+Gerar o manifesto dos arquivos brutos e o relatório de qualidade:
 
 ```powershell
 python -m src.auditar_dados
 ```
 
-Esse comando também gera um relatório de qualidade da base tratada, com checagens de duplicidade de ID, nulos em colunas importantes, valores negativos e categorias raras.
-
-Arquivos gerados:
-
-```text
-relatorios/tabelas/manifesto_dados_brutos.csv
-relatorios/tabelas/qualidade_ocorrencias.csv
-relatorios/qualidade_dados.md
-```
-
-Esses artefatos ajudam a demonstrar controle de dados, reprodutibilidade e maturidade do pipeline.
-
-## Como rodar os testes
+Verificar se a PRF publicou novos arquivos, sem sobrescrever a base local:
 
 ```powershell
-python -m pytest
+python -m src.verificar_dados_publicos --salvar-relatorio
 ```
 
-## Índice de risco
+O projeto também inclui um script opcional para agendar essa verificação semanal no Windows. Relatórios operacionais e logs ficam em `logs/`, fora do versionamento.
 
-O índice de risco é uma métrica simples, explicável e educacional:
+## Privacidade e licenças
 
-```text
-indice_risco = total_acidentes + mortos * 5 + feridos_graves * 3 + feridos_leves
-```
+Os arquivos de dados não são distribuídos neste repositório. O pipeline inclui verificações para bloquear colunas potencialmente identificáveis antes de uma atualização. Consulte [LGPD e Privacidade](docs/07_lgpd_e_privacidade.md).
 
-Ele é calculado por UF, BR, município, causa e faixa de horário. A classificação em baixo, médio, alto e crítico usa a distribuição dos próprios resultados.
-
-## Resultados gerados
-
-- Gráficos: `relatorios/graficos/`
-- Tabelas: `relatorios/tabelas/`
-- Relatório final: `relatorios/relatorio_final.md`
-- Dashboard: `dashboard/app.py`
-- Roteiro de apresentação: `apresentacao/roteiro_apresentacao.md`
-
-## Dados e GitHub
-
-Os CSVs grandes de dados brutos, tratados e modelados não são enviados ao GitHub. Eles ficam ignorados pelo `.gitignore`.
-
-Para reproduzir o projeto, coloque os CSVs públicos da PRF nas pastas indicadas em `dados/01_brutos/` e execute o pipeline.
-
-## Proteção de dados e LGPD
-
-Este projeto utiliza dados públicos disponibilizados para fins de análise educacional. Nenhum dado pessoal sensível ou identificável foi incluído no repositório.
+A licença MIT deste repositório se aplica ao código do projeto. Os dados continuam sujeitos aos termos e condições da fonte pública da PRF; o mapa local mantém sua atribuição em [`dashboard/assets/maps/README.md`](dashboard/assets/maps/README.md).
 
 ## Limitações
 
-- O ano corrente é parcial quando estiver presente no recorte.
-- Os resultados dependem da qualidade dos registros da fonte.
-- A análise cobre o escopo de rodovias federais registrado pela PRF.
-- Padrões encontrados não provam causalidade absoluta.
-- O índice de risco é uma métrica educacional, não uma previsão oficial.
+- O recorte cobre apenas acidentes em rodovias federais registrados pela PRF.
+- O ano corrente é parcial quando aparece na análise.
+- Diferenças de preenchimento e cobertura entre anos podem afetar comparações.
+- Padrões observados indicam associação, não causalidade.
+- Percentuais sem medidas externas de exposição — como fluxo de veículos, frota ou quilômetros percorridos — exigem interpretação cuidadosa.
+- O índice de risco usa pesos definidos para fins educacionais e não foi validado por um órgão oficial.
 
 ## Próximos passos
 
-- Adicionar prints reais do dashboard em `docs/imagens/`.
-- Adicionar novos CSVs públicos da PRF na camada bruta e rodar `python -m src.atualizar_projeto` quando houver publicação nova.
-- Cruzar os resultados com frota, população ou fluxo de veículos.
-- Evoluir o dashboard com novos comparativos.
-- Refinar o índice de risco.
+- Adicionar capturas reais do dashboard ao repositório.
+- Incorporar medidas externas de exposição ao risco, quando houver fontes compatíveis.
+- Publicar uma demonstração online do dashboard com dados agregados.
+- Ampliar os testes de integração do pipeline completo.
 
 ## Autor
 
-Pedro Netto.
+Desenvolvido por [José Pedro Netto](https://github.com/josepedrosoaresdesouzanetto-max).
